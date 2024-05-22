@@ -85,8 +85,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
             }
 
             if(direction == 'up') {
-                this.cy = this.cy - this.size;
-                this.parts.forEach(singlePart => {singlePart.y = singlePart.y - this.size});
+                // at this place in future we can add brick rotating feature
             }
         },
 
