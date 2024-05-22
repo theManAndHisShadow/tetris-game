@@ -25,7 +25,7 @@ const Controls = function(){
                 // update event listener set state
                 hasKeyboardHandler = true;
 
-                document.body.addEventListener('keyup', (e) => {
+                document.body.addEventListener('keypress', (e) => {
                     /**
                      * Internal helper function.
                      * @param {string} targetAction 
