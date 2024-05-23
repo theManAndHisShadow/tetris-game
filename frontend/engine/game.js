@@ -11,16 +11,16 @@ let SETTINGS = null;
  * 
  * @param {number} cx center x
  * @param {number} cy center y
- * @param {string} color color of brick
- * @param {number} size size of brick
- * @param {string} shape shape of brick, might be i, l, j, o, t, s, z
+ * @param {string} color color of figure
+ * @param {number} size size of figure
+ * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
  * @param {CanvasRenderingContext2D} renderer 
  * @returns {object}
  */
-const Brick = function({cx, cy, color, size, shape, renderer} = {}){
+const Figure = function({cx, cy, color, size, shape, renderer} = {}){
     /**
      * 
-     * @param {string} shape shape of brick, might be i, l, j, o, t, s, z
+     * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
      * @returns 
      */
     function __generate(shape){
@@ -59,7 +59,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
 
             return parts;
         } else {
-            throw new Error("Brick generating internal function '__generate' has bad shape arg");
+            throw new Error("Figure generating internal function '__generate' has bad shape arg");
         }
     }
 
@@ -81,7 +81,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
         renderer: renderer,
 
         /**
-         * Moves brick to direction
+         * Moves figure to direction
          * @param {string} direction direction of movement
          */
         move: function(direction, speed){
@@ -106,7 +106,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
                 }
 
                 if(direction == 'up') {
-                    // at this place in future we can add brick rotating feature
+                    // at this place in future we can add figure rotating feature
                 }
             }
         },
@@ -120,7 +120,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
                     singlePart[styleProperty] = newValue;
                 });
             } else {
-                throw new Error(`Brick 'updateStyle' function has bad argument. styleProperty = ${styleProperty}`);
+                throw new Error(`Figure 'updateStyle' function has bad argument. styleProperty = ${styleProperty}`);
             }
         },
 
@@ -129,7 +129,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
         },
 
         /**
-         * Renders single brick
+         * Renders single figure
          */
         render: function(){
             this.parts.forEach(singlePart => {
@@ -141,7 +141,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
                 });
             });
 
-            if(SETTINGS.dev.__showBrickCenter === true){
+            if(SETTINGS.dev.__showFigureCenter === true){
                 // let centerX = ((this.parts.length / 2) * this.size);
                 let r = 4;
 
@@ -176,34 +176,34 @@ const Game = function({renderOn}){
             field: [],
             
             /**
-             * Create brick object and adds in field
-             * @param {number} cx brick center x coordinate
-             * @param {number} cy brick center y coordinate
-             * @param {number} shape type of brick
-             * @param {string} color color of brick
+             * Create figure object and adds in field
+             * @param {number} cx figure center x coordinate
+             * @param {number} cy figure center y coordinate
+             * @param {number} shape type of figure
+             * @param {string} color color of figure
              */
-            addBrickToField: function({cx, cy, shape, color} = {}){
+            addFigureToField: function({cx, cy, shape, color} = {}){
                if((cx && cy) && (typeof cx == 'number' && typeof cy == 'number')){
                     color = color || 'black';
                     shape = shape || 0;
 
                     const size = 25;
-                    const brick = new Brick({
+                    const figure = new Figure({
                         cx: cx, cy: cy, color: color, size: size,
                         shape: shape, renderer: renderer
                     });
 
-                    this.field.push(brick);
+                    this.field.push(figure);
 
-                    return brick;
+                    return figure;
                } else {
-                    throw new Error("Game class method 'addBrickToField' has bad cx cy args");
+                    throw new Error("Game class method 'addFigureToField' has bad cx cy args");
                }
             },
 
             
             /**
-             * Renders all filed bricks 
+             * Renders all filed figures 
              */
             render: function(){
                 /**
@@ -247,16 +247,16 @@ const Game = function({renderOn}){
 
 
             spawnBlocks: function(){
-                let brick = this.addBrickToField({cx: renderer.context.canvas.width / 2 , cy: 15, color: "black"});
+                let figure = this.addFigureToField({cx: renderer.context.canvas.width / 2 , cy: 15, color: "black"});
 
-                if(brick.isFalling === false) {
-                    brick = this.spawnBlocks();
-                    console.log(brick)
+                if(figure.isFalling === false) {
+                    figure = this.spawnBlocks();
+                    console.log(figure)
                 }
 
-                // brick.fall();
+                // figure.fall();
 
-                return brick;
+                return figure;
             },
 
 
@@ -278,13 +278,13 @@ const Game = function({renderOn}){
                 // init controls module
                 controls.init();
 
-                // create and add some test brick
+                // create and add some test figure
                 let player = this.spawnBlocks();
 
-                // render all game bricks include movements
+                // render all game figures include movements
                 setInterval(self.render.bind(self), fps);
 
-                // update gravity impact at target brick
+                // update gravity impact at target figure
                 setInterval(self.gravitize.bind(self, player), 90 / SETTINGS.gravity);
 
                 // Movement managment

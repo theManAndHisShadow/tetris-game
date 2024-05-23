@@ -2,7 +2,7 @@ console.log('[Log]: Starting settings.js');
 
 const Settings = function(){
     const devModeToggle__button = document.querySelector('#dev-panel__toggleDevMode-button');
-    const showBrickCenter__button = document.querySelector('#dev-panel__showBrickCenter-button');
+    const showFigureCenter__button = document.querySelector('#dev-panel__showFigureCenter-button');
 
     return {
         // TODO: 
@@ -12,7 +12,7 @@ const Settings = function(){
         // add comments
         dev: {
             __devModeState: true,
-            __showBrickCenter: true,
+            __showFigureCenter: true,
         },
     
         gravity: 0.1,
@@ -25,7 +25,7 @@ const Settings = function(){
 
             console.log('[Log]: initializing Settings');
             __updateVisual(devModeToggle__button, this.dev.__devModeState);
-            __updateVisual(showBrickCenter__button, this.dev.__showBrickCenter);
+            __updateVisual(showFigureCenter__button, this.dev.__showFigureCenter);
 
             devModeToggle__button.addEventListener('click', (e) => {
                 this.dev.__devModeState = this.dev.__devModeState === true ? false : true;
@@ -34,11 +34,11 @@ const Settings = function(){
                 console.log(this.dev.__devModeState);
             });
 
-            showBrickCenter__button.addEventListener('click', (e) => {
-                this.dev.__showBrickCenter = this.dev.__showBrickCenter === true ? false : true;
-                __updateVisual(showBrickCenter__button, this.dev.__showBrickCenter);
+            showFigureCenter__button.addEventListener('click', (e) => {
+                this.dev.__showFigureCenter = this.dev.__showFigureCenter === true ? false : true;
+                __updateVisual(showFigureCenter__button, this.dev.__showFigureCenter);
 
-                console.log(this.dev.__showBrickCenter);
+                console.log(this.dev.__showFigureCenter);
             });
         },
     }
