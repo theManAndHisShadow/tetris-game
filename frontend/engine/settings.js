@@ -15,7 +15,7 @@ const Settings = function(){
             __showBrickCenter: true,
         },
     
-        gravity: 0.01,
+        gravity: 0.1,
 
         init: function(){
             function __updateVisual(target, state){

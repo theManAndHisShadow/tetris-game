@@ -71,6 +71,9 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
         cx: cx,
         cy: cy,
 
+        isFreezed: false,
+        isFalling: true,
+
         size: size,
         color: color,
         shape: shape,
@@ -81,28 +84,48 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
          * Moves brick to direction
          * @param {string} direction direction of movement
          */
-        move: function(direction){
-            console.log('moved to ' + direction);
+        move: function(direction, speed){
+            if(this.isFreezed === false){
+                // console.log('moved to ' + direction);
+                let delta = speed || this.size;
 
-            //TODO: maybe refactor this part?
-            if(direction == 'left') {
-                this.cx = this.cx - this.size;
-                this.parts.forEach(singlePart => {singlePart.x = singlePart.x - this.size});
-            }
+                //TODO: maybe refactor this part?
+                if(direction == 'left') {
+                    this.cx = this.cx - delta;
+                    this.parts.forEach(singlePart => {singlePart.x = singlePart.x - delta});
+                }
 
-            if(direction == 'right') {
-                this.cx = this.cx + this.size;
-                this.parts.forEach(singlePart => {singlePart.x = singlePart.x + this.size});
-            }
+                if(direction == 'right') {
+                    this.cx = this.cx + delta;
+                    this.parts.forEach(singlePart => {singlePart.x = singlePart.x + delta});
+                }
 
-            if(direction == 'down') {
-                this.cy = this.cy + this.size;
-                this.parts.forEach(singlePart => {singlePart.y = singlePart.y + this.size});
-            }
+                if(direction == 'down') {
+                    this.cy = this.cy + delta;
+                    this.parts.forEach(singlePart => {singlePart.y = singlePart.y + delta});
+                }
 
-            if(direction == 'up') {
-                // at this place in future we can add brick rotating feature
+                if(direction == 'up') {
+                    // at this place in future we can add brick rotating feature
+                }
             }
+        },
+
+        updateStye: function(styleProperty, newValue){
+            let objectAllowedProprties = ['color', 'size'];
+
+            if(objectAllowedProprties.indexOf(styleProperty) > -1){
+                this[styleProperty] = newValue;
+                this.parts.forEach(singlePart => {
+                    singlePart[styleProperty] = newValue;
+                });
+            } else {
+                throw new Error(`Brick 'updateStyle' function has bad argument. styleProperty = ${styleProperty}`);
+            }
+        },
+
+        fall: function(){
+            this.isFalling = false;
         },
 
         /**
@@ -114,7 +137,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
                     x: singlePart.x,
                     y: singlePart.y,
                     w: size,
-                    c: color,
+                    c: this.color,
                 });
             });
 
@@ -130,7 +153,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
                 });
 
                 // console.log(centerX);
-                }
+            }
         },
     }
 };
@@ -146,6 +169,8 @@ const Game = function({renderOn}){
 
         const settings = new Settings();
         const controls = new Controls({target: renderOn});
+
+        const fps = (1000 / 25);
 
         return {
             field: [],
@@ -169,6 +194,8 @@ const Game = function({renderOn}){
                     });
 
                     this.field.push(brick);
+
+                    return brick;
                } else {
                     throw new Error("Game class method 'addBrickToField' has bad cx cy args");
                }
@@ -195,8 +222,41 @@ const Game = function({renderOn}){
 
                 // re-render
                 this.field.forEach(fieldItem => {
+                    // if(fieldItem.isFalling === false){
+                    //     fieldItem.move('down', 1);
+                    //     console.log(fieldItem);
+                    //     // this.parts.forEach(singlePart => {singlePart.x = singlePart.x - this.size});
+                    // }
+
                     fieldItem.render();     
                 });
+            },
+
+
+            gravitize: function(target){
+                if(target.cy > renderer.context.canvas.height - target.size) {
+                    target.isFalling = false;
+                    target.isFreezed = true;
+
+                    target.updateStye('color', 'blue');
+                    console.log('isFalling = false');
+                } else {
+                    target.move('down');
+                }
+            },
+
+
+            spawnBlocks: function(){
+                let brick = this.addBrickToField({cx: renderer.context.canvas.width / 2 , cy: 15, color: "black"});
+
+                if(brick.isFalling === false) {
+                    brick = this.spawnBlocks();
+                    console.log(brick)
+                }
+
+                // brick.fall();
+
+                return brick;
             },
 
 
@@ -218,11 +278,14 @@ const Game = function({renderOn}){
                 // init controls module
                 controls.init();
 
-                // add some test brick
-                this.addBrickToField({cx: renderer.context.canvas.width / 2 , cy: 15, color: "black"});
+                // create and add some test brick
+                let player = this.spawnBlocks();
 
                 // render all game bricks include movements
-                setInterval(self.render.bind(self), (1000/25));
+                setInterval(self.render.bind(self), fps);
+
+                // update gravity impact at target brick
+                setInterval(self.gravitize.bind(self, player), 90 / SETTINGS.gravity);
 
                 // Movement managment
                 controls.on('up', () => {
