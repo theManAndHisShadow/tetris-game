@@ -141,7 +141,7 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                 });
             });
 
-            if(SETTINGS.dev.__showFigureCenter === true){
+            if(SETTINGS.dev.__showFigureCenter.state === true){
                 // let centerX = ((this.parts.length / 2) * this.size);
                 let r = 4;
 
@@ -168,6 +168,9 @@ const Game = function({renderOn}){
         });
 
         const settings = new Settings();
+
+        const dev_ui = new DevUI(settings.dev);
+
         const controls = new Controls({target: renderOn});
 
         const fps = (1000 / 25);
@@ -176,7 +179,7 @@ const Game = function({renderOn}){
             field: [],
             
             /**
-             * Create figure object and adds in field
+             * Create figure object and adds to game field
              * @param {number} cx figure center x coordinate
              * @param {number} cy figure center y coordinate
              * @param {number} shape type of figure
@@ -271,6 +274,8 @@ const Game = function({renderOn}){
 
                 // init settings module
                 settings.init();
+
+                dev_ui.init();
 
                 // binding a settings object to a global variable
                 SETTINGS = settings;
