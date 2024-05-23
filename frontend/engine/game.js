@@ -114,6 +114,7 @@ const Game = function({renderOn}){
             context: renderOn.getContext("2d"),
         });
 
+        const settings = new Settings();
         const controls = new Controls({target: renderOn});
 
         return {
@@ -177,6 +178,8 @@ const Game = function({renderOn}){
 
                 // fix for setInterval block
                 let self = this;
+
+                settings.init();
 
                 // init controls module
                 controls.init();
