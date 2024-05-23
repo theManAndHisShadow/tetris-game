@@ -14,7 +14,7 @@ const Settings = function(){
         init: function(){
             function __updateVisual(target, state){
                 target.classList = "state-" + state;
-                target.innerHTML = state === true ? 'on' : 'off';
+                target.innerHTML = `${state}`;
             }
 
             console.log('[Log]: initializing Settings');
