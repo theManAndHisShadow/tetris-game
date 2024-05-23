@@ -1,5 +1,11 @@
 console.log('[Log]: Starting game.js');
 
+/**
+ * global SETTINGS var ref to settings object.
+ * This value is global for easy acces to settings from any place in game logic
+ * Nota bene! Before settings object inits this var is null!
+ */
+let SETTINGS = null;
 
 /**
  * 
@@ -21,25 +27,33 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
         if(typeof shape == "string"){
             let parts = [];
 
+
+            // TODO: make this part using dynamical generation
             if(shape == "i") {
+                // how much elements in horizontal line
+                let h_count = 4;
+
+                // how much elements in vertical line
+                let v_count = 1;
+
                 parts.push({
-                    x: cx - (size/2),
-                    y: cy - (size/2),
+                    x: cx - (h_count / 2) * size,
+                    y: cy - (size / 2),
                 });
 
                 parts.push({
-                    x: cx + (size/2) + 1,
-                    y: cy - (size/2),
+                    x: cx - ((h_count / 2) - 1) * size + 1,
+                    y: cy - (size / 2),
                 });
 
                 parts.push({
-                    x: cx + (size * 1.5) + 2,
-                    y: cy - (size/2),
+                    x: cx + 2,
+                    y: cy - (size / 2),
                 });
 
                 parts.push({
-                    x: cx + (size * 2.5) + 3,
-                    y: cy - (size/2),
+                    x: cx + size + 3,
+                    y: cy - (size / 2),
                 });
             }
 
@@ -53,8 +67,10 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
     shape = 'i';
 
     return {
+        // TODO: make cx and cy correct calculating
         cx: cx,
         cy: cy,
+
         size: size,
         color: color,
         shape: shape,
@@ -101,6 +117,20 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
                     c: color,
                 });
             });
+
+            if(SETTINGS.dev.__showBrickCenter === true){
+                // let centerX = ((this.parts.length / 2) * this.size);
+                let r = 4;
+
+                this.renderer.drawPoint({
+                    x: this.cx + (r/2), 
+                    y: this.cy, 
+                    r: r, 
+                    c: 'red',
+                });
+
+                // console.log(centerX);
+                }
         },
     }
 };
@@ -179,13 +209,17 @@ const Game = function({renderOn}){
                 // fix for setInterval block
                 let self = this;
 
+                // init settings module
                 settings.init();
+
+                // binding a settings object to a global variable
+                SETTINGS = settings;
 
                 // init controls module
                 controls.init();
 
                 // add some test brick
-                this.addBrickToField({cx: 15, cy: 15, color: "black"});
+                this.addBrickToField({cx: renderer.context.canvas.width / 2 , cy: 15, color: "black"});
 
                 // render all game bricks include movements
                 setInterval(self.render.bind(self), (1000/25));
