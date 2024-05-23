@@ -58,8 +58,6 @@ const DevUI = function(devSettings){
                     optionToggle.addEventListener('click', (e) => {
                         devSettings[option].state = devSettings[option].state == true ? false : true;
                         __updateVisual(optionToggle, devSettings[option].state);
-
-                        console.log(this.devSettings[option]);
                     });
 
                     optionContainer.appendChild(optionTitle);
