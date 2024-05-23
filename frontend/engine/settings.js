@@ -14,13 +14,13 @@ const Settings = function () {
             // draw dot to figure center
             __renderFigureCenter: {
                 state: true,
-                label: 'show figure center',
+                label: 'Render figure center',
             },
 
             // draw bounding rect of figure
-            __renderFigureBoundingRect: {
+            __rendeFieldFreeSpaceBoundingRect: {
                 state: true,
-                label: 'show figure bounding rect',
+                label: 'Render free space rect',
             },
         },
 
