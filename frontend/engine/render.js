@@ -2,6 +2,8 @@ console.log('[Log]: Starting render.js');
 
 const Renderer = function({context}) {
     if(context && context instanceof CanvasRenderingContext2D) {
+        context.canvas.height = 400;
+        
         return {
             context: context,
 

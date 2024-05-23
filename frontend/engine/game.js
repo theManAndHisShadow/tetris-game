@@ -23,23 +23,24 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
 
             if(shape == "i") {
                 parts.push({
-                    x: cx - (size/2),
-                    y: cy - (size/2),
+                    x: cx - (size / 2),
+                    y: cy - (size / 2),
                 });
 
                 parts.push({
-                    x: cx + (size/2) + 1,
-                    y: cy - (size/2),
+                    x: cx - (size / 2),
+                    y: cy + (size / 2) + 1
                 });
 
                 parts.push({
-                    x: cx + (size * 1.5) + 2,
-                    y: cy - (size/2),
+                    x: cx - (size / 2),
+                    y: cy + (size * 1.5) + 2
                 });
 
                 parts.push({
-                    x: cx + (size * 2.5) + 3,
-                    y: cy - (size/2),
+                    x: cx - (size / 2),
+                    y: cy + (size * 2.5) + 3
+                    
                 });
             }
 
@@ -88,6 +89,10 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
                 this.cy = this.cy - this.size;
                 this.parts.forEach(singlePart => {singlePart.y = singlePart.y - this.size});
             }
+
+            if(direction == 'stop'){
+                return;
+            }
         },
 
         /**
@@ -126,6 +131,7 @@ const Game = function({renderOn}){
              * @param {number} cy brick center y coordinate
              * @param {number} shape type of brick
              * @param {string} color color of brick
+             * @param {boolean} freezed state block to field
              */
             addBrickToField: function({cx, cy, shape, color} = {}){
                if((cx && cy) && (typeof cx == 'number' && typeof cy == 'number')){
@@ -134,8 +140,13 @@ const Game = function({renderOn}){
 
                     const size = 25;
                     const brick = new Brick({
-                        cx: cx, cy: cy, color: color, size: size,
-                        shape: shape, renderer: renderer
+                        cx: cx,
+                        cy: cy,
+                        size: size,
+                        color: color,
+                        shape: shape,
+                        renderer: renderer, 
+                        isFall: false,
                     });
 
                     this.field.push(brick);
@@ -169,6 +180,37 @@ const Game = function({renderOn}){
                 });
             },
 
+            fallBrickHandler: function(){
+                this.addBrickToField({cx: renderer.context.canvas.width / 2, cy: 15, color: "black"});
+                
+                if(this.field.length > 3){
+                    return 0;
+                } else {
+
+                    this.field.forEach(fieldItem => {
+                        const inter = setInterval(() => {
+                        if(!fieldItem.isFall){
+                                fieldItem.move('down');
+    
+                                if(fieldItem.parts.at(-1).y > renderer.context.canvas.height - fieldItem.size){
+                                    fieldItem.isFall = true;
+                                    // clearInterval(inter);
+                                    return this.fallBrickHandler();
+                                }
+    
+                        } else {
+                            return;
+                        }
+
+                    }, 1000);
+                    })
+                }
+
+            },
+
+            // landedBricksHandler: function(){
+
+            // },
 
             /**
              * Init game
@@ -183,17 +225,17 @@ const Game = function({renderOn}){
                 controls.init();
 
                 // add some test brick
-                this.addBrickToField({cx: 15, cy: 15, color: "black"});
+                this.fallBrickHandler();
 
                 // render all game bricks include movements
-                setInterval(self.render.bind(self), (1000/25));
+                setInterval(self.render.bind(self), (1000 / 25));
 
                 // Movement managment
-                controls.on('up', () => {
-                    this.field.forEach(fieldItem => {
-                        fieldItem.move('up');
-                    });
-                });
+                // controls.on('up', () => {
+                //     this.field.forEach(fieldItem => {
+                //         fieldItem.move('up');
+                //     });
+                // });
 
                 controls.on('left', () => {
                     this.field.forEach(fieldItem => {
@@ -204,14 +246,12 @@ const Game = function({renderOn}){
                 controls.on('right', () => {
                     this.field.forEach(fieldItem => {
                         fieldItem.move('right');
-                        console.log('right', fieldItem);
                     });
                 });
 
                 controls.on('down', () => {
                     this.field.forEach(fieldItem => {
                         fieldItem.move('down');
-                        console.log('down', fieldItem);
                     });
                 });
             }
