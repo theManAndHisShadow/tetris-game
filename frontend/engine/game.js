@@ -141,7 +141,21 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                 });
             });
 
-            if(SETTINGS.dev.__showFigureCenter.state === true){
+            if(SETTINGS.dev.__renderFigureCenter.state === true){
+                // let centerX = ((this.parts.length / 2) * this.size);
+                let r = 4;
+
+                this.renderer.drawPoint({
+                    x: this.cx + (r/2), 
+                    y: this.cy, 
+                    r: r, 
+                    c: 'red',
+                });
+
+                // console.log(centerX);
+            }
+
+            if(SETTINGS.dev.__renderFigureCenter.state === true){
                 // let centerX = ((this.parts.length / 2) * this.size);
                 let r = 4;
 

@@ -1,6 +1,6 @@
 console.log('[Log]: Starting settings.js');
 
-const Settings = function(){
+const Settings = function () {
 
     return {
         // Storing some props for dev & debugging purposes
@@ -12,22 +12,22 @@ const Settings = function(){
             },
 
             // draw dot to figure center
-            __showFigureCenter: {
+            __renderFigureCenter: {
                 state: true,
                 label: 'show figure center',
             },
 
             // draw bounding rect of figure
-            __showFigureBoundingRect: {
+            __renderFigureBoundingRect: {
                 state: true,
                 label: 'show figure bounding rect',
             },
         },
-        
+
         // speed of figure moving to bottom
         gravity: 0.1,
 
-        init: function(){
+        init: function () {
             console.log('[Log]: initializing Settings');
 
         },
