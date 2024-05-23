@@ -1,0 +1,36 @@
+#dev-panel {
+    background: #0000003b;
+    width: fit-content;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 6px;
+
+    color: #000000d1;
+    font-family: monospace;
+}
+
+#dev-panel__title {
+    position: relative;
+    right: 2px;
+    margin-bottom: 5px;
+    color: #cecece;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+#dev-panel button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    right: 5px;
+    bottom: 1px;
+}
+
+.state-true {
+    color: #11e011;
+}
+
+.state-false {
+    color: #6a0000;
+}

@@ -6,13 +6,18 @@
         <title>Game Proto</title>
         <link rel="stylesheet" type="text/css" href="./resources/css/common.css">
         <link rel="stylesheet" type="text/css" href="./resources/css/game-screen.css">
+        <link rel="stylesheet" type="text/css" href="./resources/css/dev-panel.css">
     </head>
 
     <body>
         <div id="root">
-            <div id="dev-controls">
-                <div id="dev-controls__title">[Dev controls]</div>
-                <button id="dev-controls__toggleDevMode-button">Toggle dev mode</button>
+            <div id="dev-panel">
+                <div id="dev-panel__title">[Dev panel]</div>
+
+                <div>
+                    <span id="dev-panel__toggleDevMode-title">dev mode: </span>
+                    <button id="dev-panel__toggleDevMode-button">on</button>
+                </div>
             </div>
 
             <div id="app" class="absolute-centred">
