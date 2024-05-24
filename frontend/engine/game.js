@@ -27,7 +27,6 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
         if(typeof shape == "string"){
             let parts = [];
 
-
             // TODO: make this part using dynamical generation
             if(shape == "i") {
                 // how much elements in horizontal line
@@ -238,15 +237,18 @@ const Game = function({renderOn}){
 
 
             gravitize: function(target){
-                if(target.cy > renderer.context.canvas.height - target.size) {
-                    target.isFalling = false;
-                    target.isFreezed = true;
-
-                    target.updateStye('color', 'blue');
-                    console.log('isFalling = false');
-                } else {
-                    target.move('down');
+                if(SETTINGS.dev.__disableGravity.state === false){
+                    if(target.cy > renderer.context.canvas.height - target.size) {
+                        target.isFalling = false;
+                        target.isFreezed = true;
+    
+                        target.updateStye('color', 'blue');
+                        console.log('isFalling = false');
+                    } else {
+                        target.move('down');
+                    }
                 }
+
             },
 
 

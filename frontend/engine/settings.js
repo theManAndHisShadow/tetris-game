@@ -11,6 +11,11 @@ const Settings = function () {
                 label: 'dev mode',
             },
 
+            __disableGravity: {
+                state: true,
+                label: 'disable gravity'
+            },
+
             // draw dot to figure center
             __renderFigureCenter: {
                 state: true,
