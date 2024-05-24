@@ -8,10 +8,11 @@ console.log('[Log]: Starting game.js');
  * @param {string} color color of brick
  * @param {number} size size of brick
  * @param {string} shape shape of brick, might be i, l, j, o, t, s, z
+ * @param {boolen} isFall: state block to field
  * @param {CanvasRenderingContext2D} renderer 
  * @returns {object}
  */
-const Brick = function({cx, cy, color, size, shape, renderer} = {}){
+const Brick = function({cx, cy, color, size, shape, renderer, isFall } = {}){
     /**
      * 
      * @param {string} shape shape of brick, might be i, l, j, o, t, s, z
@@ -61,6 +62,7 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
         shape: shape,
         parts: __generate(shape),
         renderer: renderer,
+        isFall: isFall,
 
         /**
          * Moves brick to direction
@@ -69,29 +71,26 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
         move: function(direction){
             console.log('moved to ' + direction);
 
-            //TODO: maybe refactor this part?
-            if(direction == 'left') {
-                this.cx = this.cx - this.size;
-                this.parts.forEach(singlePart => {singlePart.x = singlePart.x - this.size});
-            }
-
-            if(direction == 'right') {
-                this.cx = this.cx + this.size;
-                this.parts.forEach(singlePart => {singlePart.x = singlePart.x + this.size});
-            }
-
-            if(direction == 'down') {
-                this.cy = this.cy + this.size;
-                this.parts.forEach(singlePart => {singlePart.y = singlePart.y + this.size});
-            }
-
-            if(direction == 'up') {
-                this.cy = this.cy - this.size;
-                this.parts.forEach(singlePart => {singlePart.y = singlePart.y - this.size});
-            }
-
-            if(direction == 'stop'){
-                return;
+            if(!this.isFall){
+                if(direction == 'left') {
+                    this.cx = this.cx - this.size;
+                    this.parts.forEach(singlePart => {singlePart.x = singlePart.x - this.size});
+                }
+    
+                if(direction == 'right') {
+                    this.cx = this.cx + this.size;
+                    this.parts.forEach(singlePart => {singlePart.x = singlePart.x + this.size});
+                }
+    
+                if(direction == 'down') {
+                    this.cy = this.cy + this.size;
+                    this.parts.forEach(singlePart => {singlePart.y = singlePart.y + this.size});
+                }
+    
+                if(direction == 'up') {
+                    this.cy = this.cy - this.size;
+                    this.parts.forEach(singlePart => {singlePart.y = singlePart.y - this.size});
+                }
             }
         },
 
@@ -115,7 +114,6 @@ const Brick = function({cx, cy, color, size, shape, renderer} = {}){
 
 const Game = function({renderOn}){
     if(renderOn){
-        // private value ?
         const renderer = new Renderer({
             context: renderOn.getContext("2d"),
         });
@@ -131,7 +129,7 @@ const Game = function({renderOn}){
              * @param {number} cy brick center y coordinate
              * @param {number} shape type of brick
              * @param {string} color color of brick
-             * @param {boolean} freezed state block to field
+             * @param {boolean} isFall state block to field
              */
             addBrickToField: function({cx, cy, shape, color} = {}){
                if((cx && cy) && (typeof cx == 'number' && typeof cy == 'number')){
@@ -181,12 +179,10 @@ const Game = function({renderOn}){
             },
 
             fallBrickHandler: function(){
-                this.addBrickToField({cx: renderer.context.canvas.width / 2, cy: 15, color: "black"});
-                
-                if(this.field.length > 3){
+                if(this.field.length > 2){
                     return 0;
                 } else {
-
+                    this.addBrickToField({cx: renderer.context.canvas.width / 2, cy: 15, color: "black"});
                     this.field.forEach(fieldItem => {
                         const inter = setInterval(() => {
                         if(!fieldItem.isFall){
@@ -194,7 +190,6 @@ const Game = function({renderOn}){
     
                                 if(fieldItem.parts.at(-1).y > renderer.context.canvas.height - fieldItem.size){
                                     fieldItem.isFall = true;
-                                    // clearInterval(inter);
                                     return this.fallBrickHandler();
                                 }
     
