@@ -176,6 +176,7 @@ const Game = function({renderOn}){
         const fps = (1000 / 25);
 
         return {
+            player: null,
             field: [],
             
             /**
@@ -286,8 +287,9 @@ const Game = function({renderOn}){
                 // init controls module
                 controls.init();
 
-                // create and add some test figure
+                // create and add player figure
                 let player = this.spawnBlocks();
+                this.player = player;
 
                 // render all game figures include movements
                 setInterval(self.render.bind(self), fps);
@@ -297,29 +299,23 @@ const Game = function({renderOn}){
 
                 // Movement managment
                 controls.on('up', () => {
-                    this.field.forEach(fieldItem => {
-                        fieldItem.move('up');
-                    });
+                    let direction = 'up';
+                    this.player.move(direction);
                 });
 
                 controls.on('left', () => {
-                    this.field.forEach(fieldItem => {
-                        fieldItem.move('left');
-                    });
+                    let direction = 'left';
+                    this.player.move(direction);
                 });
 
                 controls.on('right', () => {
-                    this.field.forEach(fieldItem => {
-                        fieldItem.move('right');
-                        console.log('right', fieldItem);
-                    });
+                    let direction = 'right';
+                    this.player.move(direction);
                 });
 
                 controls.on('down', () => {
-                    this.field.forEach(fieldItem => {
-                        fieldItem.move('down');
-                        console.log('down', fieldItem);
-                    });
+                    let direction = 'down';
+                    this.player.move(direction);
                 });
             }
         }
