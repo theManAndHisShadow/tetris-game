@@ -157,7 +157,7 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                         if(collisionBuffer.length > 0) {
                             delta = 0;
                             this.isFreezed = true;
-                            this.updateStye('color', 'blue');
+                            this.updateStyle('color', 'blue');
                         }
                     });
 
@@ -175,7 +175,7 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
             }
         },
 
-        updateStye: function(styleProperty, newValue){
+        updateStyle: function(styleProperty, newValue){
             let objectAllowedProprties = ['color', 'size'];
 
             if(objectAllowedProprties.indexOf(styleProperty) > -1){
@@ -308,7 +308,7 @@ const Game = function({renderOn}){
                         target.isFalling = false;
                         target.isFreezed = true;
     
-                        target.updateStye('color', 'blue');
+                        target.updateStyle('color', 'blue');
                         console.log('isFalling = false');
                     } else {
                         target.move('down');
