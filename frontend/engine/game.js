@@ -323,41 +323,42 @@ const Game = function({renderOn}){
 
                 // re-render
                 this.field.forEach(fieldItem => {
-                    // if(fieldItem.isFalling === false){
-                    //     fieldItem.move('down', 1);
-                    //     console.log(fieldItem);
-                    //     // this.parts.forEach(singlePart => {singlePart.x = singlePart.x - this.size});
-                    // }
-
                     fieldItem.render();     
                 });
             },
 
 
+            /**
+             * Implements the gravitational effect of the player figure
+             * @param {object} target target of gravity impact
+             */
             gravitize: function(target){
+                // If gravity turn on
                 if(SETTINGS.dev.__disableGravity.state === false){
+                    // Use onFieldBorderTouch logic
                     target.move({
                         direction: 'down',
                         onFieldBorderTouch: function(figure){
+                            // make it static
                             figure.isFalling = false;
                             figure.isFreezed = true;
                             target.updateStyle('color', 'blue');
                         }
                     });
                 }
-
             },
 
 
+            /**
+             * Spawn a new block and add it to game field
+             * @returns {object}
+             */
             spawnBlocks: function(){
                 let figure = this.addFigureToField({cx: renderer.context.canvas.width / 2 , cy: 15, color: "black"});
 
                 if(figure.isFalling === false) {
                     figure = this.spawnBlocks();
-                    console.log(figure)
                 }
-
-                // figure.fall();
 
                 return figure;
             },
