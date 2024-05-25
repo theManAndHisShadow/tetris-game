@@ -83,9 +83,23 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
         /**
          * Moves figure to direction
          * @param {string} direction direction of movement
+         * @param {number} speed speed of movement (by one step)
+         * @param {Function} onFieldBorderTouch what happens when figure touches the border. Currently available ONLY for 'down' direction
+         * @param {Function} onFieldBorderCollide what happens when figure collides with the border
+         * 
          */
-        move: function(direction, speed){
+        move: function({direction, speed, onFieldBorderTouch, onFieldBorderCollide}){
+            // storing info when part touch border
+            let touchBuffer = [];
+
+            // sotring info when part collide border
             let collisionBuffer = [];
+
+            // callback function for touch event
+            let onTouchCB = typeof onFieldBorderTouch == 'function' ? onFieldBorderTouch : function(){};
+
+            // callback function for collide event 
+            let onCollideCB = typeof onFieldBorderCollide == 'function' ? onFieldBorderCollide : function(){};
 
             // Checking that figure on freezed
             if(this.isFreezed === false){
@@ -104,8 +118,11 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                         }
 
                         // if buffer length > 0 - detected collision of any part
-                        // if detected - stop moving speed (delta);
-                        if(collisionBuffer.length > 0) delta = 0;
+                        // if detected - stop moving speed (delta) and invoke collide callback function;
+                        if(collisionBuffer.length > 0) {
+                            delta = 0;
+                            onCollideCB(this);
+                        }
                     });
 
                     // Moving
@@ -128,8 +145,11 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                         }               
 
                         // if buffer length > 0 - detected collision of any part
-                        // if detected - stop moving speed (delta);
-                        if(collisionBuffer.length > 0) delta = 0;  
+                        // if detected - stop moving speed (delta) and invoke collide callback function;
+                        if(collisionBuffer.length > 0) {
+                            delta = 0;  
+                            onCollideCB(this);
+                        }
                     });
 
                     // Moving
@@ -145,19 +165,31 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                     // Collision checking
                     // Check collision for every part of figure
                     this.parts.forEach(singlePart => {
+                        // if figure part is close to the bottom of the field edge
+                        // that means part is touches field edge
+                        if(singlePart.y > (this.renderer.context.canvas.height - this.size * 2)) {
+                            // save that info to buffer
+                           touchBuffer.push(true);
+                        }
+
                         // if figure part is to the bottom than the field edge
                         // that means part is collides with field edge
                         if(singlePart.y > (this.renderer.context.canvas.height - this.size)) {
                              // save that info to buffer
                             collisionBuffer.push(true);
-                        }               
+                        }         
+                        
+                        // if buffer length > 0 - detected touching 
+                        // if detected - invoke touch callback function
+                        if(touchBuffer.length > 0) {
+                            onTouchCB(this);
+                        }
 
                         // if buffer length > 0 - detected collision of any part
-                        // if detected - stop moving speed (delta);
+                        // if detected - stop moving speed (delta) and invoke collide callback function;
                         if(collisionBuffer.length > 0) {
                             delta = 0;
-                            this.isFreezed = true;
-                            this.updateStyle('color', 'blue');
+                            onCollideCB(this);
                         }
                     });
 
@@ -365,22 +397,49 @@ const Game = function({renderOn}){
                 // Movement managment
                 controls.on('up', () => {
                     let direction = 'up';
-                    this.player.move(direction);
+                    this.player.move({
+                        direction: direction,
+                    });
                 });
 
                 controls.on('left', () => {
                     let direction = 'left';
-                    this.player.move(direction);
+
+                    this.player.move({
+                        direction: direction,
+                        
+                        // demo code
+                        onFieldBorderCollide: function(figure){
+                            console.log('Figure collide with '+ direction +' border of game field');
+                        }
+                    });
                 });
 
                 controls.on('right', () => {
                     let direction = 'right';
-                    this.player.move(direction);
+
+                    this.player.move({
+                        direction: direction,
+
+                         // demo code
+                        onFieldBorderCollide: function(figure){
+                            console.log('Figure collide with '+ direction +' border of game field');
+                        }
+                    });
                 });
 
                 controls.on('down', () => {
                     let direction = 'down';
-                    this.player.move(direction);
+
+                    this.player.move({
+                        direction: direction,
+                        onFieldBorderTouch: function(figure){
+                            console.log('Figure touches'+ direction +' border of game field and freezed now');
+
+                            figure.isFreezed = true;
+                            figure.updateStyle('color', 'blue');
+                        }
+                    });
                 });
             }
         }
