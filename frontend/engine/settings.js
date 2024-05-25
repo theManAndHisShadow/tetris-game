@@ -12,7 +12,7 @@ const Settings = function () {
             },
 
             __disableGravity: {
-                state: true,
+                state: false,
                 label: 'disable gravity'
             },
 

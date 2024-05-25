@@ -336,15 +336,14 @@ const Game = function({renderOn}){
 
             gravitize: function(target){
                 if(SETTINGS.dev.__disableGravity.state === false){
-                    if(target.cy > renderer.context.canvas.height - target.size) {
-                        target.isFalling = false;
-                        target.isFreezed = true;
-    
-                        target.updateStyle('color', 'blue');
-                        console.log('isFalling = false');
-                    } else {
-                        target.move('down');
-                    }
+                    target.move({
+                        direction: 'down',
+                        onFieldBorderTouch: function(figure){
+                            figure.isFalling = false;
+                            figure.isFreezed = true;
+                            target.updateStyle('color', 'blue');
+                        }
+                    });
                 }
 
             },
