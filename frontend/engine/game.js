@@ -116,14 +116,14 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                             // save that info to buffer
                             collisionBuffer.push(true);
                         }
-
-                        // if buffer length > 0 - detected collision of any part
-                        // if detected - stop moving speed (delta) and invoke collide callback function;
-                        if(collisionBuffer.length > 0) {
-                            delta = 0;
-                            onCollideCB(this);
-                        }
                     });
+
+                    // if buffer length > 0 - detected collision of any part
+                    // if detected - stop moving speed (delta) and invoke collide callback function;
+                    if(collisionBuffer.length > 0) {
+                        delta = 0;
+                        onCollideCB(this);
+                    }
 
                     // Moving
                     this.parts.forEach(singlePart => {
@@ -143,14 +143,14 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                             // save that info to buffer
                             collisionBuffer.push(true);
                         }               
-
-                        // if buffer length > 0 - detected collision of any part
-                        // if detected - stop moving speed (delta) and invoke collide callback function;
-                        if(collisionBuffer.length > 0) {
-                            delta = 0;  
-                            onCollideCB(this);
-                        }
                     });
+
+                    // if buffer length > 0 - detected collision of any part
+                    // if detected - stop moving speed (delta) and invoke collide callback function;
+                    if(collisionBuffer.length > 0) {
+                        delta = 0;  
+                        onCollideCB(this);
+                    }
 
                     // Moving
                     this.parts.forEach(singlePart => {
@@ -178,20 +178,20 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                              // save that info to buffer
                             collisionBuffer.push(true);
                         }         
-                        
-                        // if buffer length > 0 - detected touching 
-                        // if detected - invoke touch callback function
-                        if(touchBuffer.length > 0) {
-                            onTouchCB(this);
-                        }
-
-                        // if buffer length > 0 - detected collision of any part
-                        // if detected - stop moving speed (delta) and invoke collide callback function;
-                        if(collisionBuffer.length > 0) {
-                            delta = 0;
-                            onCollideCB(this);
-                        }
                     });
+
+                    // if buffer length > 0 - detected touching 
+                    // if detected - invoke touch callback function
+                    if(touchBuffer.length > 0) {
+                        onTouchCB(this);
+                    }
+
+                    // if buffer length > 0 - detected collision of any part
+                    // if detected - stop moving speed (delta) and invoke collide callback function;
+                    if(collisionBuffer.length > 0) {
+                        delta = 0;
+                        onCollideCB(this);
+                    }
 
                     // Moving
                     this.parts.forEach(singlePart => {
@@ -274,6 +274,10 @@ const Game = function({renderOn}){
 
         return {
             player: null,
+            startingPoint: {
+                x: (renderer.context.canvas.width/2),
+                y: 15,
+            },
             field: [],
             
             /**
@@ -332,17 +336,19 @@ const Game = function({renderOn}){
              * Implements the gravitational effect of the player figure
              * @param {object} target target of gravity impact
              */
-            gravitize: function(target){
+            gravitize: function(){
                 // If gravity turn on
                 if(SETTINGS.dev.__disableGravity.state === false){
                     // Use onFieldBorderTouch logic
-                    target.move({
+                    this.player.move({
                         direction: 'down',
-                        onFieldBorderTouch: function(figure){
+                        onFieldBorderTouch: figure => {
                             // make it static
-                            figure.isFalling = false;
-                            figure.isFreezed = true;
-                            target.updateStyle('color', 'blue');
+                            this.player.isFalling = false;
+                            this.player.isFreezed = true;
+                            this.player.updateStyle('color', 'blue');
+
+                            this.spawnFigure();
                         }
                     });
                 }
@@ -353,12 +359,16 @@ const Game = function({renderOn}){
              * Spawn a new block and add it to game field
              * @returns {object}
              */
-            spawnBlocks: function(){
-                let figure = this.addFigureToField({cx: renderer.context.canvas.width / 2 , cy: 15, color: "black"});
+            spawnFigure: function(){
+                let figure = this.addFigureToField({
+                    cx: this.startingPoint.x , 
+                    cy: this.startingPoint.y, 
+                    color: "black"
+                });
 
-                if(figure.isFalling === false) {
-                    figure = this.spawnBlocks();
-                }
+                this.player = figure;
+                this.player.isFalling = true;
+                this.player.isFreezed = false;
 
                 return figure;
             },
@@ -385,14 +395,14 @@ const Game = function({renderOn}){
                 controls.init();
 
                 // create and add player figure
-                let player = this.spawnBlocks();
+                let player = this.spawnFigure();
                 this.player = player;
 
                 // render all game figures include movements
                 setInterval(self.render.bind(self), fps);
 
                 // update gravity impact at target figure
-                setInterval(self.gravitize.bind(self, player), 90 / SETTINGS.gravity);
+                setInterval(self.gravitize.bind(self), 90 / SETTINGS.gravity);
 
                 // Movement managment
                 controls.on('up', () => {
@@ -433,11 +443,13 @@ const Game = function({renderOn}){
 
                     this.player.move({
                         direction: direction,
-                        onFieldBorderTouch: function(figure){
+                        onFieldBorderTouch: figure => {
                             console.log('Figure touches'+ direction +' border of game field and freezed now');
 
                             figure.isFreezed = true;
                             figure.updateStyle('color', 'blue');
+                            
+                            this.spawnFigure();
                         }
                     });
                 });
