@@ -79,29 +79,94 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
         parts: __generate(shape),
         renderer: renderer,
 
+
         /**
          * Moves figure to direction
          * @param {string} direction direction of movement
          */
         move: function(direction, speed){
+            let collisionBuffer = [];
+
+            // Checking that figure on freezed
             if(this.isFreezed === false){
-                // console.log('moved to ' + direction);
                 let delta = speed || this.size;
 
-                //TODO: maybe refactor this part?
+                // TODO: maybe refactor this part?
                 if(direction == 'left') {
+                    // Collision checking
+                    // Check collision for every part of figure
+                    this.parts.forEach(singlePart => {
+                        // if figure part is to the left than the field edge
+                        // that means part is collides with field edge
+                        if(singlePart.x - this.size < 0) {
+                            // save that info to buffer
+                            collisionBuffer.push(true);
+                        }
+
+                        // if buffer length > 0 - detected collision of any part
+                        // if detected - stop moving speed (delta);
+                        if(collisionBuffer.length > 0) delta = 0;
+                    });
+
+                    // Moving
+                    this.parts.forEach(singlePart => {
+                        singlePart.x = singlePart.x - delta;
+                    });
+
                     this.cx = this.cx - delta;
-                    this.parts.forEach(singlePart => {singlePart.x = singlePart.x - delta});
                 }
 
                 if(direction == 'right') {
+                    // Collision checking
+                    // Check collision for every part of figure
+                    this.parts.forEach(singlePart => {
+                        // if figure part is to the right than the field edge
+                        // that means part is collides with field edge
+                        if(singlePart.x > (this.renderer.context.canvas.width - this.size)) {
+                            // save that info to buffer
+                            collisionBuffer.push(true);
+                        }               
+
+                        // if buffer length > 0 - detected collision of any part
+                        // if detected - stop moving speed (delta);
+                        if(collisionBuffer.length > 0) delta = 0;  
+                    });
+
+                    // Moving
+                    this.parts.forEach(singlePart => {
+                        singlePart.x = singlePart.x + delta;
+                        
+                    });
+
                     this.cx = this.cx + delta;
-                    this.parts.forEach(singlePart => {singlePart.x = singlePart.x + delta});
                 }
 
                 if(direction == 'down') {
+                    // Collision checking
+                    // Check collision for every part of figure
+                    this.parts.forEach(singlePart => {
+                        // if figure part is to the bottom than the field edge
+                        // that means part is collides with field edge
+                        if(singlePart.y > (this.renderer.context.canvas.height - this.size)) {
+                             // save that info to buffer
+                            collisionBuffer.push(true);
+                        }               
+
+                        // if buffer length > 0 - detected collision of any part
+                        // if detected - stop moving speed (delta);
+                        if(collisionBuffer.length > 0) {
+                            delta = 0;
+                            this.isFreezed = true;
+                            this.updateStye('color', 'blue');
+                        }
+                    });
+
+                    // Moving
+                    this.parts.forEach(singlePart => {
+                        singlePart.y = singlePart.y + delta;
+                    });
+
                     this.cy = this.cy + delta;
-                    this.parts.forEach(singlePart => {singlePart.y = singlePart.y + delta});
                 }
 
                 if(direction == 'up') {
