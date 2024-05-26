@@ -72,17 +72,17 @@ const Brick = function({cx, cy, color, size, shape, renderer, isFall } = {}){
             console.log('moved to ' + direction);
 
             if(!this.isFall){
-                if(direction == 'left') {
+                if(direction == 'left' && this.cx > this.size) {
                     this.cx = this.cx - this.size;
                     this.parts.forEach(singlePart => {singlePart.x = singlePart.x - this.size});
                 }
     
-                if(direction == 'right') {
+                if(direction == 'right' && this.cx < renderer.context.canvas.width - this.size) {
                     this.cx = this.cx + this.size;
                     this.parts.forEach(singlePart => {singlePart.x = singlePart.x + this.size});
                 }
     
-                if(direction == 'down') {
+                if(direction == 'down' && this.cy < renderer.context.canvas.height - this.size * this.parts.length) {
                     this.cy = this.cy + this.size;
                     this.parts.forEach(singlePart => {singlePart.y = singlePart.y + this.size});
                 }
@@ -107,6 +107,12 @@ const Brick = function({cx, cy, color, size, shape, renderer, isFall } = {}){
                 });
             });
         },
+
+        controllBrickField: function(){
+            if(this.cx < 0){
+                console.log(0);
+            }
+        }
     }
 };
 
@@ -143,7 +149,7 @@ const Game = function({renderOn}){
                     color = color || 'black';
                     shape = shape || 0;
 
-                    const size = 25;
+                    const size = 20;
                     const brick = new Brick({
                         cx: cx,
                         cy: cy,
@@ -185,30 +191,28 @@ const Game = function({renderOn}){
                 });
             },
 
-            fallBrickHandler: function(){
+            fallBrickToField: function(){
                 if(pausedGame){
                     return;
                 } else {
                     this.addBrickToField({cx: renderer.context.canvas.width / 2, cy: 15, color: "black"});
 
                     this.field.forEach(fieldItem => {
+                        fieldItem.controllBrickField();
+
                         setInterval(() => {
                         if(!fieldItem.isFall){
                             fieldItem.move('down');
 
                             if(fieldItem.parts.at(-1).y > renderer.context.canvas.height - fieldItem.size){
                                 fieldItem.isFall = true;
-                                return this.fallBrickHandler();
+                                return this.fallBrickToField();
                             }
                         }
                     }, 1000);
                     })
                 }
             },
-
-            // landedBricksHandler: function(){
-
-            // },
 
             /**
              * Init game
