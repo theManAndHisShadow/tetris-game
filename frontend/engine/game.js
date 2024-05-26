@@ -17,7 +17,7 @@ let SETTINGS = null;
  * @param {CanvasRenderingContext2D} renderer 
  * @returns {object}
  */
-const Figure = function({cx, cy, color, size, shape, renderer} = {}){
+const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
     /**
      * 
      * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
@@ -67,6 +67,7 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
 
     return {
         // TODO: make cx and cy correct calculating
+        id: id,
         cx: cx,
         cy: cy,
 
@@ -78,6 +79,11 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
         shape: shape,
         parts: __generate(shape),
         renderer: renderer,
+
+        checkCollisionWith: function(targets){
+            console.log('checking collisions');
+
+        },
 
 
         /**
@@ -204,6 +210,8 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
                 if(direction == 'up') {
                     // at this place in future we can add figure rotating feature
                 }
+
+                this.checkCollisionWith(this.parts);
             }
         },
 
@@ -257,8 +265,21 @@ const Figure = function({cx, cy, color, size, shape, renderer} = {}){
 
 
 
-const Game = function({renderOn}){
+const Game = function({renderOn}){    
     if(renderOn){
+        // start point counting figure IDs
+        let basicID = -1;
+
+        /**
+         * Internal helper function to generate new ID
+         * @returns 
+         */
+        function __generateID(){
+            basicID++;
+
+            return basicID;
+        }
+
         // private value ?
         const renderer = new Renderer({
             context: renderOn.getContext("2d"),
@@ -294,10 +315,17 @@ const Game = function({renderOn}){
 
                     const size = 25;
                     const figure = new Figure({
-                        cx: cx, cy: cy, color: color, size: size,
-                        shape: shape, renderer: renderer
+                        // update Game stored figure ID
+                        id: __generateID(),
+                        cx: cx, 
+                        cy: cy,
+                        color: color, 
+                        size: size,
+                        shape: shape, 
+                        renderer: renderer,
                     });
 
+                    console.log('Added new figure: ', figure);
                     this.field.push(figure);
 
                     return figure;
