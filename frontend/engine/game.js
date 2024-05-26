@@ -17,7 +17,7 @@ let SETTINGS = null;
  * @param {CanvasRenderingContext2D} renderer 
  * @returns {object}
  */
-const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
+const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {}){
     /**
      * 
      * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
@@ -41,17 +41,17 @@ const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
                 });
 
                 parts.push({
-                    x: cx - ((h_count / 2) - 1) * size + 1,
+                    x: cx - ((h_count / 2) - 1) * size,
                     y: cy - (size / 2),
                 });
 
                 parts.push({
-                    x: cx + 2,
+                    x: cx,
                     y: cy - (size / 2),
                 });
 
                 parts.push({
-                    x: cx + size + 3,
+                    x: cx + size,
                     y: cy - (size / 2),
                 });
             }
@@ -74,15 +74,56 @@ const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
         isFreezed: false,
         isFalling: true,
 
+        siblings: siblings,
+
         size: size,
         color: color,
         shape: shape,
         parts: __generate(shape),
         renderer: renderer,
 
-        checkCollisionWith: function(targets){
-            console.log('checking collisions');
+        checkTouchWith: function(targets){
+            let result = false;
+   
+            let otherFigures = targets;
 
+            let otherParts = [];
+
+            otherFigures.forEach(figure => {
+                otherParts = otherParts.concat(figure.parts);
+            });
+
+            let hBuffer = [];
+            
+            // console.log(this.parts[0].x);
+
+            this.parts.forEach(part =>{
+                // console.log('---')
+                otherParts.forEach(otherPart => {
+                    let a = isTouching(part, otherPart, this.size)
+                    if(a) {
+                        // console.log(a, part, otherPart);
+                        result = a;
+                    }
+
+                    // if(part) {
+                    //     // && (part.x + this.size > otherPart.x && part.x + this.size < otherPart.x + this.size);
+                    //     let xTouch = (part.x > otherPart.x && part.x < otherPart.x + this.size)
+                    //     let yTouch = part.y + this.size >= otherPart.y - this.size;
+
+                    //     if(part.x < otherPart.x + this.size) hBuffer.push(true);
+                    //     // console.log(hBuffer.length > 0);
+                    //     console.log(hBuffer.length > 0, 'x1: ', part.x, 'x2: ', (otherPart.x + this.size));
+
+                    //     // console.log(part.y + this.size, otherPart.y - this.size);
+                    //     if(xTouch) {
+                    //         result = true;
+                    //     }
+                    // }
+                });
+            })
+
+            return result;
         },
 
 
@@ -94,7 +135,7 @@ const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
          * @param {Function} onFieldBorderCollide what happens when figure collides with the border
          * 
          */
-        move: function({direction, speed, onFieldBorderTouch, onFieldBorderCollide}){
+        move: function({direction, speed, onFieldBorderTouch, onOtherFigureTouch, onFieldBorderCollide}){
             // storing info when part touch border
             let touchBuffer = [];
 
@@ -104,12 +145,20 @@ const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
             // callback function for touch event
             let onTouchCB = typeof onFieldBorderTouch == 'function' ? onFieldBorderTouch : function(){};
 
+            let onOtherTouchCB = typeof onOtherFigureTouch == 'function' ? onOtherFigureTouch : function(){};
+
             // callback function for collide event 
             let onCollideCB = typeof onFieldBorderCollide == 'function' ? onFieldBorderCollide : function(){};
 
             // Checking that figure on freezed
             if(this.isFreezed === false){
                 let delta = speed || this.size;
+
+                // if(this.checkTouchWith(this.siblings)) {
+                //     delta = 0;
+                //     console.log('colliding', delta);
+                //     onOtherTouchCB(this);
+                // }
 
                 // TODO: maybe refactor this part?
                 if(direction == 'left') {
@@ -145,7 +194,7 @@ const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
                     this.parts.forEach(singlePart => {
                         // if figure part is to the right than the field edge
                         // that means part is collides with field edge
-                        if(singlePart.x > (this.renderer.context.canvas.width - this.size)) {
+                        if(singlePart.x > (this.renderer.context.canvas.width - this.size * 2)) {
                             // save that info to buffer
                             collisionBuffer.push(true);
                         }               
@@ -173,7 +222,8 @@ const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
                     this.parts.forEach(singlePart => {
                         // if figure part is close to the bottom of the field edge
                         // that means part is touches field edge
-                        if(singlePart.y > (this.renderer.context.canvas.height - this.size * 2)) {
+                        // DEV
+                        if(singlePart.y > (this.renderer.context.canvas.height - this.size)) {
                             // save that info to buffer
                            touchBuffer.push(true);
                         }
@@ -210,8 +260,6 @@ const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
                 if(direction == 'up') {
                     // at this place in future we can add figure rotating feature
                 }
-
-                this.checkCollisionWith(this.parts);
             }
         },
 
@@ -220,9 +268,6 @@ const Figure = function({id, cx, cy, color, size, shape, renderer} = {}){
 
             if(objectAllowedProprties.indexOf(styleProperty) > -1){
                 this[styleProperty] = newValue;
-                this.parts.forEach(singlePart => {
-                    singlePart[styleProperty] = newValue;
-                });
             } else {
                 throw new Error(`Figure 'updateStyle' function has bad argument. styleProperty = ${styleProperty}`);
             }
@@ -297,7 +342,7 @@ const Game = function({renderOn}){
             player: null,
             startingPoint: {
                 x: (renderer.context.canvas.width/2),
-                y: 15,
+                y: 13,
             },
             field: [],
             
@@ -317,6 +362,13 @@ const Game = function({renderOn}){
                     const figure = new Figure({
                         // update Game stored figure ID
                         id: __generateID(),
+
+                        siblings: this.field.filter(figure => {
+                            if(figure.id !== this.id) {
+                                return figure;
+                            }
+                        }),
+                        
                         cx: cx, 
                         cy: cy,
                         color: color, 
@@ -367,18 +419,34 @@ const Game = function({renderOn}){
             gravitize: function(){
                 // If gravity turn on
                 if(SETTINGS.dev.__disableGravity.state === false){
-                    // Use onFieldBorderTouch logic
-                    this.player.move({
-                        direction: 'down',
-                        onFieldBorderTouch: figure => {
-                            // make it static
-                            this.player.isFalling = false;
-                            this.player.isFreezed = true;
-                            this.player.updateStyle('color', 'blue');
+                    let direction = 'down';
 
-                            this.spawnFigure();
-                        }
-                    });
+                    // console.log(this.player.parts[0].x, this.player.parts[0].x + (4*25), this.player.parts[0].y);
+                    if (!this.player.checkTouchWith(this.player.siblings)) {
+                        this.player.move({
+                            direction: direction,
+    
+                            onFieldBorderTouch: figure => {
+                                console.log('border touch event');
+    
+                                // make it static
+                                figure.isFalling = false;
+                                figure.isFreezed = true;
+                                figure.updateStyle('color', 'blue');
+    
+                                this.player = this.spawnFigure();
+                            }
+                        });
+                    } else {
+                        let some = this.spawnFigure();
+                        // make it static
+                        // some.isFalling = false;
+                        // some.isFreezed = true;
+                        // some.updateStyle('color', 'red');
+
+                        this.player = some;
+
+                    }
                 }
             },
 
@@ -388,17 +456,28 @@ const Game = function({renderOn}){
              * @returns {object}
              */
             spawnFigure: function(){
-                let figure = this.addFigureToField({
-                    cx: this.startingPoint.x , 
-                    cy: this.startingPoint.y, 
-                    color: "black"
-                });
+                let startPointIsFull = false;
+                this.field.forEach(figure => {
+                    if(figure.cy == this.startingPoint.y) startPointIsFull = true;
+                })
 
-                this.player = figure;
-                this.player.isFalling = true;
-                this.player.isFreezed = false;
+                if(startPointIsFull === false){
+                    let figure = this.addFigureToField({
+                        cx: this.startingPoint.x, 
+                        cy: this.startingPoint.y, 
+                        color: "black"
+                    });
 
-                return figure;
+                    figure.isFalling = true;
+                    figure.isFreezed = false;
+
+                    return figure;
+                } else {
+                    // TODO: make game over more correct way
+                    // Now it thrown an error
+                    console.log('Start point is full! GAME OVER!');
+                    return false;
+                }
             },
 
 
@@ -443,43 +522,62 @@ const Game = function({renderOn}){
                 controls.on('left', () => {
                     let direction = 'left';
 
-                    this.player.move({
-                        direction: direction,
-                        
-                        // demo code
-                        onFieldBorderCollide: function(figure){
-                            console.log('Figure collide with '+ direction +' border of game field');
-                        }
-                    });
+                    if (!this.player.checkTouchWith(this.player.siblings)) {
+                        this.player.move({
+                            direction: direction,
+                            
+                            // demo code
+                            onFieldBorderCollide: function(figure){
+                                console.log('Figure collide with '+ direction +' border of game field');
+                            }
+                        });
+                    }
                 });
 
                 controls.on('right', () => {
                     let direction = 'right';
 
-                    this.player.move({
-                        direction: direction,
-
-                         // demo code
-                        onFieldBorderCollide: function(figure){
-                            console.log('Figure collide with '+ direction +' border of game field');
-                        }
-                    });
+                    if (!this.player.checkTouchWith(this.player.siblings)) {
+                        this.player.move({
+                            direction: direction,
+    
+                             // demo code
+                            onFieldBorderCollide: function(figure){
+                                console.log('Figure collide with '+ direction +' border of game field');
+                            }
+                        });
+                    }
                 });
 
                 controls.on('down', () => {
                     let direction = 'down';
 
-                    this.player.move({
-                        direction: direction,
-                        onFieldBorderTouch: figure => {
-                            console.log('Figure touches'+ direction +' border of game field and freezed now');
+                    // console.log(this.player.parts[0].x, this.player.parts[0].x + (4*25), this.player.parts[0].y);
+                    if (!this.player.checkTouchWith(this.player.siblings)) {
+                        this.player.move({
+                            direction: direction,
+    
+                            onFieldBorderTouch: figure => {
+                                console.log('border touch event');
+    
+                                // make it static
+                                figure.isFalling = false;
+                                figure.isFreezed = true;
+                                figure.updateStyle('color', 'blue');
+    
+                                this.player = this.spawnFigure();
+                            }
+                        });
+                    } else {
+                        let some = this.spawnFigure();
+                        // make it static
+                        // some.isFalling = false;
+                        // some.isFreezed = true;
+                        // some.updateStyle('color', 'red');
 
-                            figure.isFreezed = true;
-                            figure.updateStyle('color', 'blue');
-                            
-                            this.spawnFigure();
-                        }
-                    });
+                        this.player = some;
+
+                    }
                 });
             }
         }
