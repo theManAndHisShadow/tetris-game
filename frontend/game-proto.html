@@ -6,20 +6,27 @@
         <title>Game Proto</title>
         <link rel="stylesheet" type="text/css" href="./resources/css/common.css">
         <link rel="stylesheet" type="text/css" href="./resources/css/game-screen.css">
+        <link rel="stylesheet" type="text/css" href="./resources/css/dev-panel.css">
     </head>
 
     <body>
         <div id="root">
+            <div id="dev-panel">
+                <div id="dev-panel__title">[Dev panel]</div>
+
+            </div>
+
             <div id="app" class="absolute-centred">
                 <canvas id="app__render-zone">
                     
                 </canvas>
-
                 <button id="app__restart-button">Restart</button>
             </div>
         </div>
 
         <script src="./engine/render.js"></script>
+        <script src="./engine/settings.js"></script>
+        <script src="./engine/dev.js"></script>
         <script src="./engine/controls.js"></script>
         <script src="./engine/game.js"></script>
         <script src="./app.js"></script>
