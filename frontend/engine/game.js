@@ -110,9 +110,16 @@ const Brick = function({cx, cy, color, size, shape, renderer, isFall } = {}){
     }
 };
 
-
+/**
+ * 
+ * @param {boolean} pausedGame status game / true - game stopped / false - continues
+ * @returns 
+ */
 
 const Game = function({renderOn}){
+    let pausedGame = false;
+
+
     if(renderOn){
         const renderer = new Renderer({
             context: renderOn.getContext("2d"),
@@ -179,28 +186,24 @@ const Game = function({renderOn}){
             },
 
             fallBrickHandler: function(){
-                if(this.field.length > 2){
-                    return 0;
+                if(pausedGame){
+                    return;
                 } else {
                     this.addBrickToField({cx: renderer.context.canvas.width / 2, cy: 15, color: "black"});
-                    this.field.forEach(fieldItem => {
-                        const inter = setInterval(() => {
-                        if(!fieldItem.isFall){
-                                fieldItem.move('down');
-    
-                                if(fieldItem.parts.at(-1).y > renderer.context.canvas.height - fieldItem.size){
-                                    fieldItem.isFall = true;
-                                    return this.fallBrickHandler();
-                                }
-    
-                        } else {
-                            return;
-                        }
 
+                    this.field.forEach(fieldItem => {
+                        setInterval(() => {
+                        if(!fieldItem.isFall){
+                            fieldItem.move('down');
+
+                            if(fieldItem.parts.at(-1).y > renderer.context.canvas.height - fieldItem.size){
+                                fieldItem.isFall = true;
+                                return this.fallBrickHandler();
+                            }
+                        }
                     }, 1000);
                     })
                 }
-
             },
 
             // landedBricksHandler: function(){
