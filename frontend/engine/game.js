@@ -82,44 +82,73 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         parts: __generate(shape),
         renderer: renderer,
 
-        checkForTouches: function(targets, direction){
-            let result = false;
-   
-            let otherFigures = targets;
 
+        /**
+         * Method detect this.parts collision from particular side
+         * @param {Array} targets an array of target objects with which collisions are expected from a given side
+         * @param {string} direction the side from which the collision is expected
+         * @returns 
+         */
+        checkCollisionWith: function(targets, direction){
+            /**
+            * Internal helper function that can detect of object colliding from side
+            * @param {object} firstObject first target object
+            * @param {object} secondObject second target object
+            * @param {number} size size of object.part
+            * @param {string} direction the side from which the collision is expected
+            * @returns 
+            */
+            function __detectCollisionOnSide(first, second, size, direction) {
+                // Checking that the first object touches the second in a downward direction.
+                if (direction === 'down') {
+                    return (first.y + size === second.y && 
+                            first.x < second.x + size &&
+                            first.x + size > second.x);
+                }
+                // Checking that the first object touches the second in a upward direction.
+                else if (direction === 'top') {
+                    return (second.y + size === first.y && 
+                            first.x < second.x + size &&
+                            first.x + size > second.x);
+                }
+                // Checking that the first object touches the second in a left-to-RIGHT direction
+                else if (direction === 'right') {
+                    return (first.x + size === second.x && 
+                            first.y < second.y + size &&
+                            first.y + size > second.y);
+                }
+                // Checking that the first object touches the second in a right-to-LEFT direction
+                else if (direction === 'left') {
+                    return (second.x + size === first.x && 
+                            first.y < second.y + size &&
+                            first.y + size > second.y);
+                }
+
+                else {
+                    throw new Error('__detectCollisionOnSide side argument is incorrect!');
+                }
+            }
+
+            let result = false;
+            let otherFigures = targets;
             let otherParts = [];
 
+            // gather all target parts at one dimension array
             otherFigures.forEach(figure => {
                 otherParts = otherParts.concat(figure.parts);
             });
-
-            let hBuffer = [];
             
-            // console.log(this.parts[0].x);
-
+            // using two loops compare all coord using internal helper function
             this.parts.forEach(part =>{
-                // console.log('---')
                 otherParts.forEach(otherPart => {
-                    let a = isTouchingTo(part, otherPart, this.size, direction)
-                    if(a) {
-                        // console.log(a, part, otherPart);
-                        result = a;
+                    // store result of collision detecting from paricular side
+                    let collision = __detectCollisionOnSide(part, otherPart, this.size, direction);
+
+                    // is detected
+                    if(collision) {
+                        // store result
+                        result = collision;
                     }
-
-                    // if(part) {
-                    //     // && (part.x + this.size > otherPart.x && part.x + this.size < otherPart.x + this.size);
-                    //     let xTouch = (part.x > otherPart.x && part.x < otherPart.x + this.size)
-                    //     let yTouch = part.y + this.size >= otherPart.y - this.size;
-
-                    //     if(part.x < otherPart.x + this.size) hBuffer.push(true);
-                    //     // console.log(hBuffer.length > 0);
-                    //     console.log(hBuffer.length > 0, 'x1: ', part.x, 'x2: ', (otherPart.x + this.size));
-
-                    //     // console.log(part.y + this.size, otherPart.y - this.size);
-                    //     if(xTouch) {
-                    //         result = true;
-                    //     }
-                    // }
                 });
             })
 
@@ -128,160 +157,107 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
 
         /**
-         * Moves figure to direction
-         * @param {string} direction direction of movement
-         * @param {number} speed speed of movement (by one step)
-         * @param {Function} onFieldBorderTouch what happens when figure touches the border. Currently available ONLY for 'down' direction
-         * @param {Function} onFieldBorderCollide what happens when figure collides with the border
-         * 
-         */
-        move: function({direction, speed, onFieldBorderTouch, onOtherFigureTouch, onFieldBorderCollide}){
-            // storing info when part touch border
-            let touchBuffer = [];
+        * Checks for collisions based on the direction of movement.
+        * @param {string} direction The direction of movement.
+        * @returns {Object} An object containing collisionDetected and collideWith information.
+        */
+        checkCollision: function(direction) {
+            let collisionDetected = false;
+            let collideWith = null;
 
-            // sotring info when part collide border
+            // Saving info about collision of all parts
             let collisionBuffer = [];
 
-            // callback function for touch event
-            let onTouchCB = typeof onFieldBorderTouch == 'function' ? onFieldBorderTouch : function(){};
 
-            let onOtherTouchCB = typeof onOtherFigureTouch == 'function' ? onOtherFigureTouch : function(){};
+            // checking when part of figure collides with field borders
+            this.parts.forEach(singlePart => {
+                // check if part collide with left side of field border
+                if (direction === 'left' && singlePart.x - this.size < 0) {
+                    collisionBuffer.push(true);
+                    collideWith = 'fieldBorder';
+                // check if part collide with right side of field border
+                } else if (direction === 'right' && singlePart.x > (this.renderer.context.canvas.width - this.size * 2)) {
+                    collisionBuffer.push(true);
+                    collideWith = 'fieldBorder';
+                 // check if part collide with bottom side of field border
+                } else if (direction === 'down') {
+                    if (singlePart.y > (this.renderer.context.canvas.height - this.size)) {
+                        collisionBuffer.push(true);
+                        collideWith = 'fieldBorder';
+                    }
+                }
+            });
 
-            // callback function for collide event 
-            let onCollideCB = typeof onFieldBorderCollide == 'function' ? onFieldBorderCollide : function(){};
+            // if some part collides with field border (watch at buffer length)
+            if (collisionBuffer.length > 0) {
+                collisionDetected = true;
+                collideWith = 'fieldBorder';
+            }
 
-            // Checking that figure on freezed
-            if(this.isFreezed === false){
+            // checking when part of figure collides with other fiqure part
+            if (this.checkCollisionWith(this.siblings, direction)) {
+                collisionDetected = true;
+                collideWith = 'figure';
+
+                // Additional check for bottom collidoing
+                if (direction === 'left' || direction === 'right') {
+                    if (!this.checkCollisionWith(this.siblings, 'down')) {
+                        collideWith = 'side';
+                    }
+                }
+            }
+
+            return { collisionDetected, collideWith };
+        },
+
+
+
+        /**
+        * Moves figure to direction
+        * @param {string} direction direction of movement
+        * @param {number} speed speed of movement (by one step)
+        * @param {Function} onCollide callback function for collision events
+        */
+        move: function({direction, speed, onCollide}) {
+            // Callback function for collide event
+            let onCollideCB = typeof onCollide == 'function' ? onCollide : function(){};
+
+            // Checking that figure is not freezed
+            if(this.isFreezed === false) {
                 let delta = speed || this.size;
 
+                // Collision checking
+                let { collisionDetected, collideWith } = this.checkCollision(direction);
 
-                // TODO: maybe refactor this part?
-                if(direction == 'left') {
-                    // Collision checking
-                    // Check collision for every part of figure
-                    this.parts.forEach(singlePart => {
-                        // if figure part is to the left than the field edge
-                        // that means part is collides with field edge
-                        if(singlePart.x - this.size < 0) {
-                            // save that info to buffer
-                            collisionBuffer.push(true);
-                        }
-                    });
-
-                    // if buffer length > 0 - detected collision of any part
-                    // if detected - stop moving speed (delta) and invoke collide callback function;
-                    if(collisionBuffer.length > 0) {
-                        delta = 0;
-                        onCollideCB(this);
-                    }
-
-                    // TODO: refactor this
-                    if(this.checkForTouches(this.siblings, 'right')){
-                        delta = 0;
-                        
-                        if(this.checkForTouches(this.siblings, 'down')){
-                            console.log('colliding', delta, direction);
-                            onOtherTouchCB(this);
-                        }
-                    };
-
-                    // Moving
-                    this.parts.forEach(singlePart => {
-                        singlePart.x = singlePart.x - delta;
-                    });
-
-                    this.cx = this.cx - delta;
+                // Handle collisions (with fieldBorder or figure)
+                if (collisionDetected) {
+                    delta = 0;
+                    onCollideCB(this, collideWith);
                 }
 
-                if(direction == 'right') {
-                    // Collision checking
-                    // Check collision for every part of figure
-                    this.parts.forEach(singlePart => {
-                        // if figure part is to the right than the field edge
-                        // that means part is collides with field edge
-                        if(singlePart.x > (this.renderer.context.canvas.width - this.size * 2)) {
-                            // save that info to buffer
-                            collisionBuffer.push(true);
-                        }               
-                    });
-
-                    // if buffer length > 0 - detected collision of any part
-                    // if detected - stop moving speed (delta) and invoke collide callback function;
-                    if(collisionBuffer.length > 0) {
-                        delta = 0;  
-                        onCollideCB(this);
+                // Moving figure parts coords
+                this.parts.forEach(singlePart => {
+                    if (direction === 'left') {
+                        singlePart.x -= delta;
+                    } else if (direction === 'right') {
+                        singlePart.x += delta;
+                    } else if (direction === 'down') {
+                        singlePart.y += delta;
                     }
+                });
 
-                    if(this.checkForTouches(this.siblings, 'left')){
-                        delta = 0;
-
-                        if(this.checkForTouches(this.siblings, 'down')){
-                            console.log('colliding left down', delta, direction);
-                            onOtherTouchCB(this);
-                        };
-                    };
-
-                    // Moving
-                    this.parts.forEach(singlePart => {
-                        singlePart.x = singlePart.x + delta;
-                        
-                    });
-
-                    this.cx = this.cx + delta;
-                }
-
-                if(direction == 'down') {
-                    // Collision checking
-                    // Check collision for every part of figure
-                    this.parts.forEach(singlePart => {
-                        // if figure part is close to the bottom of the field edge
-                        // that means part is touches field edge
-                        // DEV
-                        if(singlePart.y > (this.renderer.context.canvas.height - this.size)) {
-                            // save that info to buffer
-                           touchBuffer.push(true);
-                        }
-
-                        // if figure part is to the bottom than the field edge
-                        // that means part is collides with field edge
-                        if(singlePart.y > (this.renderer.context.canvas.height - this.size)) {
-                             // save that info to buffer
-                            collisionBuffer.push(true);
-                        }         
-                    });
-
-                    // if buffer length > 0 - detected touching 
-                    // if detected - invoke touch callback function
-                    if(touchBuffer.length > 0) {
-                        onTouchCB(this);
-                    }
-
-                    if(this.checkForTouches(this.siblings, 'down')){
-                        delta = 0;
-                        console.log('colliding', delta);
-                        onOtherTouchCB(this);
-                    };
-
-                    // if buffer length > 0 - detected collision of any part
-                    // if detected - stop moving speed (delta) and invoke collide callback function;
-                    if(collisionBuffer.length > 0) {
-                        delta = 0;
-                        onCollideCB(this);
-                    }
-
-                    // Moving
-                    this.parts.forEach(singlePart => {
-                        singlePart.y = singlePart.y + delta;
-                    });
-
-                    this.cy = this.cy + delta;
-                }
-
-                if(direction == 'up') {
-                    // at this place in future we can add figure rotating feature
+                // Move figure center coord
+                if (direction === 'left') {
+                    this.cx -= delta;
+                } else if (direction === 'right') {
+                    this.cx += delta;
+                } else if (direction === 'down') {
+                    this.cy += delta;
                 }
             }
         },
+
+
 
         updateStyle: function(styleProperty, newValue){
             let objectAllowedProprties = ['color', 'size'];
@@ -291,10 +267,6 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             } else {
                 throw new Error(`Figure 'updateStyle' function has bad argument. styleProperty = ${styleProperty}`);
             }
-        },
-
-        fall: function(){
-            this.isFalling = false;
         },
 
         /**
@@ -443,23 +415,21 @@ const Game = function({renderOn}){
 
                     this.player.move({
                         direction: direction,
+                        onCollide: (figure, collideWith) => {
+                            if(collideWith == 'fieldBorder') {
+                                // make it static
+                                figure.isFalling = false;
+                                figure.isFreezed = true;
+                                figure.updateStyle('color', 'blue');
+    
+                                this.player = this.spawnFigure();
+                            }
 
-                        onOtherFigureTouch: figure => {
-                            console.log('test');
-                            figure.updateStyle('color', 'red');
-                            this.player = this.spawnFigure();
+                            if(collideWith == 'figure') {
+                                figure.updateStyle('color', 'red');
+                                this.player = this.spawnFigure();
+                            }
                         },
-
-                        onFieldBorderTouch: figure => {
-                            console.log('border touch event');
-
-                            // make it static
-                            figure.isFalling = false;
-                            figure.isFreezed = true;
-                            figure.updateStyle('color', 'blue');
-
-                            this.player = this.spawnFigure();
-                        }
                     });
                 }
             },
@@ -535,19 +505,19 @@ const Game = function({renderOn}){
 
                 controls.on('left', () => {
                     let direction = 'left';
-
+                    
                     this.player.move({
                         direction: direction,
+                        onCollide: (figure, collideWith) => {
+                            if(collideWith == 'fieldBorder') {
+                                console.log('Figure collide with '+ direction +' border of game field');
+                            }
 
-                        onOtherFigureTouch: figure => {
-                            figure.updateStyle('color', 'yellow');
-                            this.player = this.spawnFigure();
-                        },
-                        
-                        // demo code
-                        onFieldBorderCollide: function(figure){
-                            console.log('Figure collide with '+ direction +' border of game field');
-                        }
+                            if(collideWith == 'figure') {
+                                figure.updateStyle('color', 'yellow');
+                                this.player = this.spawnFigure();
+                            }
+                        } 
                     });
                 });
 
@@ -556,16 +526,16 @@ const Game = function({renderOn}){
 
                     this.player.move({
                         direction: direction,
+                        onCollide: (figure, collideWith) => {
+                            if(collideWith == 'fieldBorder') {
+                                console.log('Figure collide with '+ direction +' border of game field');
+                            }
 
-                        onOtherFigureTouch: figure => {
-                            figure.updateStyle('color', 'magenta');
+                            if(collideWith == 'figure') {
+                                figure.updateStyle('color', 'magenta');
                             this.player = this.spawnFigure();
+                            }
                         },
-
-                         // demo code
-                        onFieldBorderCollide: function(figure){
-                            console.log('Figure collide with '+ direction +' border of game field');
-                        }
                     });
                 });
 
@@ -574,22 +544,21 @@ const Game = function({renderOn}){
 
                     this.player.move({
                         direction: direction,
+                        onCollide: (figure, collideWith) => {
+                            if(collideWith == 'fieldBorder') {
+                                // make it static
+                                figure.isFalling = false;
+                                figure.isFreezed = true;
+                                figure.updateStyle('color', 'blue');
+    
+                                this.player = this.spawnFigure();
+                            }
 
-                        onOtherFigureTouch: figure => {
-                            figure.updateStyle('color', 'green');
-                            this.player = this.spawnFigure();
+                            if(collideWith == 'figure') {
+                                figure.updateStyle('color', 'green');
+                                this.player = this.spawnFigure();
+                            }
                         },
-
-                        onFieldBorderTouch: figure => {
-                            console.log('border touch event');
-
-                            // make it static
-                            figure.isFalling = false;
-                            figure.isFreezed = true;
-                            figure.updateStyle('color', 'blue');
-
-                            this.player = this.spawnFigure();
-                        }
                     });
                 });
             }
