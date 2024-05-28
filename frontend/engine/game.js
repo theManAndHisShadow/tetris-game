@@ -19,57 +19,140 @@ let SETTINGS = null;
  */
 const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {}){
     /**
-     * 
+     * Internal helper function to get matrix of some particular shape.
      * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
-     * @returns 
+     * @returns {object}
      */
-    function __generate(shape){
-        if(typeof shape == "string"){
-            let parts = [];
+    function __getShapeMatrix(shape){
+        shape = shape || 'i';
 
-            // TODO: make this part using dynamical generation
-            if(shape == "i") {
-                // how much elements in horizontal line
-                let h_count = 4;
+        // Each shape has 2 important props:
+        // center of shape (for correct position, moving, rotating)
+        // shape parts configuration array (n-dimensional matrix), 
+        // where 0 - empty part, 1 - part
+        const shapes = {
+            i: {
+                center:[2, 0.5],
+                matrix: [
+                            [1, 1, 1, 1],
+                        ]
+            },
 
-                // how much elements in vertical line
-                let v_count = 1;
+            o: {
+                center: [1, 1],
+                matrix: [
+                    [1, 1],
+                    [1, 1],
+                ]
+            }, 
 
-                parts.push({
-                    x: cx - (h_count / 2) * size,
-                    y: cy - (size / 2),
-                });
+            j: {
+                center: [1, 1.5],
+                matrix: [
+                    [0, 1],
+                    [0, 1],
+                    [1, 1],
+                ],
+            },
 
-                parts.push({
-                    x: cx - ((h_count / 2) - 1) * size,
-                    y: cy - (size / 2),
-                });
+            l: {
+                center: [1, 1.5],
+                matrix: [
+                    [1, 0],
+                    [1, 0],
+                    [1, 1],
+                ],
+            },
 
-                parts.push({
-                    x: cx,
-                    y: cy - (size / 2),
-                });
+            t: {
+                center: [1.5, 1],
+                matrix: [
+                    [0, 1, 0],
+                    [1, 1, 1]
+                ],
+            },
 
-                parts.push({
-                    x: cx + size,
-                    y: cy - (size / 2),
-                });
-            }
+            z: {
+                center: [1.5, 1],
+                matrix: [
+                    [1, 1, 0],
+                    [0, 1, 1],
+                ],
+            },
 
-            return parts;
-        } else {
-            throw new Error("Figure generating internal function '__generate' has bad shape arg");
+            s: {
+                center: [1.5, 1],
+                matrix: [
+                    [0, 1, 1],
+                    [1, 1, 0],
+                ],
+            },
         }
+        
+       return shapes[shape];
     }
 
-    // TODO: replace temp solution
-    shape = 'i';
+    /**
+     * Internal helper function to generate parts for shape using shape-matrix.
+     * @param {string} shapeLetter letter of shape
+     * @returns {Array}
+     */
+    function __generateFromMatrix(shapeLetter){
+        // Get shape matrix using shapeLetter
+        let shape = __getShapeMatrix(shapeLetter);
+        
+        // create empty array
+        let parts = [];
+
+        // loop through matrix 'slices' (rows)
+        shape.matrix.forEach((slice, i) => {
+            // now loop through each value of slice
+            slice.forEach((value, j) => {
+                // if part is not empty
+                if(value > 0) {
+                    // generate new part
+                    parts.push({
+                        // Generating process uses offsets to generate correct pos of part
+                        x: cx + (size*j) - (size * shape.center[0]),
+                        y: cy + (size*i) - (size * shape.center[1]),
+                    });
+                }
+            });
+        });
+
+        return parts;
+    }
+
+    /**
+     * Internal helper function to set figure spawn point.
+     * @param {string} shape shape letter of figure
+     * @returns {object}
+     */
+    function __setSpawnPoint(shape){
+        // horizontal center
+        let spawPointX = (renderer.context.canvas.width/2);
+        
+        // verical pos
+        let spawPointY = __getShapeMatrix(shape).center[1] * size;
+
+        return { x: spawPointX, y: spawPointY }
+    }
+
+    
+    shape = shape || 'i';
+
+    // if cx and cy is empty - spawn at figure default spawn point (get using special function)
+    cx = cx || __setSpawnPoint(shape).x;
+    cy = cy || __setSpawnPoint(shape).y;
 
     return {
         // TODO: make cx and cy correct calculating
         id: id,
         cx: cx,
         cy: cy,
+
+        // default spawn point of figure
+        spawnPoint: __setSpawnPoint(shape),
 
         isFreezed: false,
         isFalling: true,
@@ -79,9 +162,8 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         size: size,
         color: color,
         shape: shape,
-        parts: __generate(shape),
+        parts: __generateFromMatrix(shape),
         renderer: renderer,
-
 
         /**
          * Method detect this.parts collision from particular side
@@ -181,7 +263,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                     collideWith = 'fieldBorder';
                  // check if part collide with bottom side of field border
                 } else if (direction === 'down') {
-                    if (singlePart.y > (this.renderer.context.canvas.height - this.size)) {
+                    if (singlePart.y > (this.renderer.context.canvas.height - this.size*2)) {
                         collisionBuffer.push(true);
                         collideWith = 'fieldBorder';
                     }
@@ -346,36 +428,32 @@ const Game = function({renderOn}){
              * @param {string} color color of figure
              */
             addFigureToField: function({cx, cy, shape, color} = {}){
-               if((cx && cy) && (typeof cx == 'number' && typeof cy == 'number')){
-                    color = color || 'black';
-                    shape = shape || 0;
+                color = color || 'black';
+                shape = shape || 0;
 
-                    const size = 25;
-                    const figure = new Figure({
-                        // update Game stored figure ID
-                        id: __generateID(),
+                const size = 25;
+                const figure = new Figure({
+                    // update Game stored figure ID
+                    id: __generateID(),
 
-                        siblings: this.field.filter(figure => {
-                            if(figure.id !== this.id) {
-                                return figure;
-                            }
-                        }),
-                        
-                        cx: cx, 
-                        cy: cy,
-                        color: color, 
-                        size: size,
-                        shape: shape, 
-                        renderer: renderer,
-                    });
+                    siblings: this.field.filter(figure => {
+                        if(figure.id !== this.id) {
+                            return figure;
+                        }
+                    }),
+                    
+                    cx: cx, 
+                    cy: cy,
+                    color: color, 
+                    size: size,
+                    shape: shape, 
+                    renderer: renderer,
+                });
 
-                    console.log('Added new figure: ', figure);
-                    this.field.push(figure);
+                console.log('Added new figure: ', figure);
+                this.field.push(figure);
 
-                    return figure;
-               } else {
-                    throw new Error("Game class method 'addFigureToField' has bad cx cy args");
-               }
+                return figure;
             },
 
             
@@ -441,15 +519,21 @@ const Game = function({renderOn}){
              */
             spawnFigure: function(){
                 let startPointIsFull = false;
+                // With some forms there is a bug due to correct movement to the sides
+                // let shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
+
+                let shapesLetters = ['i', 'j', 'l', 'o'];
+
                 this.field.forEach(figure => {
                     if(figure.cy == this.startingPoint.y) startPointIsFull = true;
                 })
 
                 if(startPointIsFull === false){
                     let figure = this.addFigureToField({
-                        cx: this.startingPoint.x, 
-                        cy: this.startingPoint.y, 
-                        color: "black"
+                        color: "black",
+
+                        // generate each time random figure
+                        shape: shapesLetters[getRandomNumber(0, 6)],
                     });
 
                     figure.isFalling = true;
