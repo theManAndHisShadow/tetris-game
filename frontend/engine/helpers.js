@@ -1,5 +1,7 @@
 console.log('[Log]: Starting helpers.js');
 
-function getRandomNumber() {
-    return Math.floor(Math.random() * 100) + 1;
-}
+function getRandomNumber(min, max) {
+    let rand = min + Math.random() * (max + 1 - min);
+
+    return Math.floor(rand);
+  }
