@@ -3,6 +3,21 @@ console.log('[Log]: Starting settings.js');
 const Settings = function () {
 
     return {
+        settingsUI: {
+            background: {
+                buttonPrevId: 'backcolor-prev',
+                buttonNextId: 'backcolor-next',
+                colors: [['blue', '#3b9fd1'], ['red', '#c35353'], ['purple', '#7e4585'], ['black', '#202324']],
+            },
+
+        }, 
+
+        renderUISettings: function(){
+            
+            const dom = new CreateSettingsModal();
+            dom.init();
+
+        },
         // Storing some props for dev & debugging purposes
         dev: {
             // globally turn on or off dev mode
@@ -12,7 +27,7 @@ const Settings = function () {
             },
 
             __disableGravity: {
-                state: false,
+                state: true,
                 label: 'disable gravity'
             },
 
@@ -34,7 +49,7 @@ const Settings = function () {
 
         init: function () {
             console.log('[Log]: initializing Settings');
-
+            this.renderUISettings();
         },
     }
 };
