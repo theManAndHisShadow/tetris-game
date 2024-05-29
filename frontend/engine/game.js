@@ -32,7 +32,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         // where 0 - empty part, 1 - part
         const shapes = {
             i: {
-                center:[2, 0.5],
+                center:[2, 1],
                 matrix: [
                             [1, 1, 1, 1],
                         ]
@@ -47,7 +47,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             }, 
 
             j: {
-                center: [1, 1.5],
+                center: [1, 2],
                 matrix: [
                     [0, 1],
                     [0, 1],
@@ -56,7 +56,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             },
 
             l: {
-                center: [1, 1.5],
+                center: [1, 2],
                 matrix: [
                     [1, 0],
                     [1, 0],
@@ -65,7 +65,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             },
 
             t: {
-                center: [1.5, 1],
+                center: [2, 1],
                 matrix: [
                     [0, 1, 0],
                     [1, 1, 1]
@@ -73,7 +73,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             },
 
             z: {
-                center: [1.5, 1],
+                center: [2, 1],
                 matrix: [
                     [1, 1, 0],
                     [0, 1, 1],
@@ -81,7 +81,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             },
 
             s: {
-                center: [1.5, 1],
+                center: [2, 1],
                 matrix: [
                     [0, 1, 1],
                     [1, 1, 0],
@@ -128,10 +128,10 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
      * @param {string} shape shape letter of figure
      * @returns {object}
      */
-    function __setSpawnPoint(shape){
+    function __setSpawnPoint(shape, size){
         // horizontal center
-        let spawPointX = (renderer.context.canvas.width/2);
-        
+        let spawPointX = ((renderer.context.canvas.width / size) / 2) * size;
+
         // verical pos
         let spawPointY = __getShapeMatrix(shape).center[1] * size;
 
@@ -142,17 +142,18 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
     shape = shape || 'i';
 
     // if cx and cy is empty - spawn at figure default spawn point (get using special function)
-    cx = cx || __setSpawnPoint(shape).x;
-    cy = cy || __setSpawnPoint(shape).y;
+    cx = cx || __setSpawnPoint(shape, size).x;
+    cy = cy || __setSpawnPoint(shape, size).y;
 
     return {
         // TODO: make cx and cy correct calculating
         id: id,
         cx: cx,
         cy: cy,
+        angle: 0,
 
         // default spawn point of figure
-        spawnPoint: __setSpawnPoint(shape),
+        spawnPoint: __setSpawnPoint(shape, size),
 
         isFreezed: false,
         isFalling: true,
@@ -338,7 +339,24 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 }
             }
         },
+        
 
+        /**
+         * Rotates an object by counterclockwise at game field
+         */
+        rotate: function(){
+            // Save to object values between 0 and -360 by each time when its rotates
+            this.angle = (this.angle - 90) < -360 ? 0 : (this.angle - 90);
+
+            // Rotate each part of figure
+            this.parts.forEach(part => {
+                // Rotate x and y coords
+                let {x, y} = rotate(this.cx, this.cy, part.x, part.y, -90);
+                
+                part.x = x - this.size;
+                part.y = y;
+            });
+        },
 
 
         updateStyle: function(styleProperty, newValue){
@@ -367,7 +385,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             if(SETTINGS.dev.__renderFigureCenter.state === true){
                 let r = 4;
 
-                this.renderer.drawPoint({
+                this.renderer.drawCircle({
                     x: this.cx + (r/2), 
                     y: this.cy, 
                     r: r, 
@@ -384,10 +402,23 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
 
 
-const Game = function({renderOn}){    
+const Game = function({renderOn, fieldSize, gridSize}){    
+    gridSize = gridSize || 20;
+    fieldSize = fieldSize || [10, 16];
+
     if(renderOn){
+        renderOn.width = fieldSize[0] * gridSize;
+        renderOn.height = fieldSize[1] * gridSize;
+
         // start point counting figure IDs
         let basicID = -1;
+
+        // private value ?
+        const renderer = new Renderer({
+            context: renderOn.getContext("2d"),
+        });
+
+        const settings = new Settings();
 
         /**
          * Internal helper function to generate new ID
@@ -399,12 +430,35 @@ const Game = function({renderOn}){
             return basicID;
         }
 
-        // private value ?
-        const renderer = new Renderer({
-            context: renderOn.getContext("2d"),
-        });
+        /**
+         *  Internal helper function to draw game field grid
+         * @param {number} gridSize size of grid cell
+         * @param {string} linesColor color of grid line
+         */
+        function __drawFieldGrid(gridSize, linesColor){
+            linesColor = linesColor || '#FFA500';
+            
+            const height = renderer.context.canvas.height;
+            const width = renderer.context.canvas.width;
+            const horizontal_amount = width / gridSize;
+            const verical_amount = height / gridSize;
 
-        const settings = new Settings();
+            for(let h = 0; h <= horizontal_amount; h++){
+                for(let v = 0; v <= verical_amount; v++){
+                    renderer.drawLine({
+                        x1: gridSize * h, y1: 0,
+                        x2: gridSize * h, y2: height,
+                        c: linesColor, w: 2,
+                    });
+
+                    renderer.drawLine({
+                        x1: 0, y1: gridSize * v,
+                        x2: width, y2: gridSize * v,
+                        c: linesColor, w: 2,
+                    });
+                }
+            }
+        }
 
         const dev_ui = new DevUI(settings.dev);
 
@@ -445,7 +499,7 @@ const Game = function({renderOn}){
                     cx: cx, 
                     cy: cy,
                     color: color, 
-                    size: size,
+                    size: gridSize,
                     shape: shape, 
                     renderer: renderer,
                 });
@@ -474,6 +528,10 @@ const Game = function({renderOn}){
 
                 // clear render zone manually
                 __clearRenderZone();
+
+                if(settings.dev.__drawFieldGrid.state === true) {
+                    __drawFieldGrid(gridSize);
+                }
 
                 // re-render
                 this.field.forEach(fieldItem => {
@@ -519,10 +577,7 @@ const Game = function({renderOn}){
              */
             spawnFigure: function(){
                 let startPointIsFull = false;
-                // With some forms there is a bug due to correct movement to the sides
-                // let shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
-
-                let shapesLetters = ['i', 'j', 'l', 'o'];
+                let shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
 
                 this.field.forEach(figure => {
                     if(figure.cy == this.startingPoint.y) startPointIsFull = true;
@@ -582,14 +637,15 @@ const Game = function({renderOn}){
                 // Movement managment
                 controls.on('up', () => {
                     let direction = 'up';
-                    this.player.move({
-                        direction: direction,
-                    });
+
+                    // Rotating figure by pressing w/UpArrow
+                    this.player.rotate();
                 });
 
                 controls.on('left', () => {
                     let direction = 'left';
                     
+                    // Moving figure to left by pressing a/LeftArrow
                     this.player.move({
                         direction: direction,
                         onCollide: (figure, collideWith) => {
@@ -608,6 +664,7 @@ const Game = function({renderOn}){
                 controls.on('right', () => {
                     let direction = 'right';
 
+                    // Moving figure to left by pressing d/RightArrow
                     this.player.move({
                         direction: direction,
                         onCollide: (figure, collideWith) => {
@@ -626,6 +683,7 @@ const Game = function({renderOn}){
                 controls.on('down', () => {
                     let direction = 'down';
 
+                    // Moving figure to down by pressing s/DownArrow
                     this.player.move({
                         direction: direction,
                         onCollide: (figure, collideWith) => {

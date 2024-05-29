@@ -27,6 +27,11 @@ const Settings = function () {
                 state: true,
                 label: 'Render free space rect',
             },
+
+            __drawFieldGrid: {
+                state: true,
+                label: 'Render field grid',
+            },
         },
 
         // speed of figure moving to bottom
