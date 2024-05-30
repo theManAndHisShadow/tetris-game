@@ -351,7 +351,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             // Rotate each part of figure
             this.parts.forEach(part => {
                 // Rotate x and y coords
-                let {x, y} = rotate(this.cx, this.cy, part.x, part.y, -90);
+                let {x, y} = rotatePoint(this.cx, this.cy, part.x, part.y, -90);
                 
                 part.x = x - this.size;
                 part.y = y;
