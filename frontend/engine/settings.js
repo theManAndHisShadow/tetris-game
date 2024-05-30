@@ -5,16 +5,14 @@ const Settings = function () {
     return {
         settingsUI: {
             background: {
-                buttonPrevId: 'backcolor-prev',
-                buttonNextId: 'backcolor-next',
-                colors: [['blue', '#3b9fd1'], ['red', '#c35353'], ['purple', '#7e4585'], ['black', '#202324']],
+                colors: [['gray', '#858585'], ['blue', '#3b9fd1'], ['red', '#c35353'], ['purple', '#7e4585'], 
+                ['black', '#202324']],
             },
-
         }, 
 
         renderUISettings: function(){
             
-            const dom = new CreateSettingsModal();
+            const dom = new CreateSettingsModal(this.settingsUI);
             dom.init();
 
         },

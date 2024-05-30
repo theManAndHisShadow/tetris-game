@@ -31,9 +31,79 @@
     left: 10px;
 }
 
+#settings-button {
+    width: 30px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 10px;
+}
+
 #settings-modal {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 200px;
+    height: 150px;
+    border: 1px solid rgb(0 0 0 / 43%);
+    border-radius: 5px;
+    flex-direction: column;
+}
+
+#settings-modal::backdrop {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+#settings-modal__header {
+    background-color: rgb(233, 233, 233);
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#settings-modal__close {
+    position: absolute;
+    border: none;
+    right: 0;
+    cursor: pointer;
+    background-color: none;
+    margin-right: 10px;
+}
+
+#settings-modal__background-colors {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 45px;
+    justify-content: space-between;
+}
+
+#settings-modal__background-title {
+    padding: 5px;
+    box-sizing: border-box;
+    align-self: flex-start;
+}
+
+#background-colors__inputs {
+    width: 70%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.change-color-button {
+    width: 15px;
+    font-size: 18px;
+    border: none;
+    background-color: white;
+    cursor: pointer;
+}
+
+#settings-modal__save-button {
+    position: relative;
+    width: 40%;
+    left: 50%;
+    margin-top: 15px;
+    transform: translateX(-50%);
 }
