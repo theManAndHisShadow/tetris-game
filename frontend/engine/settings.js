@@ -7,30 +7,44 @@ const Settings = function () {
         dev: {
             // globally turn on or off dev mode
             __devMode: {
-                state: true,
+                type: 'toggle',
                 label: 'dev mode',
+                state: true,
             },
 
             __disableGravity: {
-                state: false,
-                label: 'disable gravity'
+                type: 'toggle',
+                label: 'disable gravity',
+                state: true,
             },
 
             // draw dot to figure center
             __renderFigureCenter: {
-                state: true,
+                type: 'toggle',
                 label: 'Render figure center',
+                state: true,
             },
 
             // draw bounding rect of figure
             __rendeFieldFreeSpaceBoundingRect: {
-                state: true,
+                type: 'toggle',
                 label: 'Render free space rect',
+                state: true,
             },
 
             __drawFieldGrid: {
-                state: true,
+                type: 'toggle',
                 label: 'Render field grid',
+                state: true,
+            },
+
+            __spawnFigure: {
+                type: 'button-list',
+                label: 'spawn figure',
+                list: ['i', 'j', 'l', 'o', 't', 's', 'z'],
+
+                // prop that stores cb function
+                execute: null,
             },
         },
 
