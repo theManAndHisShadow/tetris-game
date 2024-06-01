@@ -266,28 +266,28 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
 
             // checking when block of figure collides with field borders
-            this.blocks.forEach(singleblock => {
-                // console.log(singleblock.x, singleblock.y, singleblock.x < 0);
+            this.blocks.forEach(singleBlock => {
+                // console.log(singleBlock.x, singleBlock.y, singleBlock.x < 0);
                 // check if block collide with left side of field border
-                if (direction === 'left' && singleblock.x == 0) {
+                if (direction === 'left' && singleBlock.x == 0) {
                     collisionBuffer.push('touching');
                     collideWith = 'fieldBorder';
-                } else if (direction === 'left' && singleblock.x < 0) {
+                } else if (direction === 'left' && singleBlock.x < 0) {
                     collisionBuffer.push('overlapping');
                     collideWith = 'fieldBorder';
 
                 // check if block collide with right side of field border
-                } else if (direction === 'right' && singleblock.x - this.size == (this.renderer.context.canvas.width - this.size * 2)) {
+                } else if (direction === 'right' && singleBlock.x - this.size == (this.renderer.context.canvas.width - this.size * 2)) {
                     collisionBuffer.push('touching');
                     collideWith = 'fieldBorder';
                  // check if block collide with bottom side of field border
-                } else if (direction === 'right' && singleblock.x > (this.renderer.context.canvas.width - this.size * 2)) {
+                } else if (direction === 'right' && singleBlock.x > (this.renderer.context.canvas.width - this.size * 2)) {
                     collisionBuffer.push('overlapping');
                     collideWith = 'fieldBorder';
 
                  // check if block collide with bottom side of field border
                 } else if (direction === 'down') {
-                    if (singleblock.y > (this.renderer.context.canvas.height - this.size*2)) {
+                    if (singleBlock.y > (this.renderer.context.canvas.height - this.size*2)) {
                         collisionBuffer.push('touching');
                         collideWith = 'fieldBorder';
                     }
@@ -351,13 +351,13 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 }
 
                 // Moving figure blocks coords
-                this.blocks.forEach(singleblock => {
+                this.blocks.forEach(singleBlock => {
                     if (direction === 'left') {
-                        singleblock.x -= delta;
+                        singleBlock.x -= delta;
                     } else if (direction === 'right') {
-                        singleblock.x += delta;
+                        singleBlock.x += delta;
                     } else if (direction === 'down') {
-                        singleblock.y += delta;
+                        singleBlock.y += delta;
                     }
                 });
 
@@ -490,14 +490,25 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             }
         },
 
+        freeze: function(){
+            this.isFalling = false;
+            this.isFreezed = true;
+
+            this.blocks.forEach(singleBlock => {
+                console.log(singleBlock);
+            });
+
+            this.updateStyle('color', 'blue');
+        },
+
         /**
          * Renders single figure
          */
         render: function(){
-            this.blocks.forEach(singleblock => {
+            this.blocks.forEach(singleBlock => {
                 this.renderer.drawSquare({
-                    x: singleblock.x,
-                    y: singleblock.y,
+                    x: singleBlock.x,
+                    y: singleBlock.y,
                     w: size,
                     c: this.color,
                 });

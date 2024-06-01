@@ -160,15 +160,14 @@ const Game = function({renderOn, fieldSize, gridSize}){
                         onCollide: (figure, collideWith) => {
                             if(collideWith == 'fieldBorder') {
                                 // make it static
-                                figure.isFalling = false;
-                                figure.isFreezed = true;
-                                figure.updateStyle('color', 'blue');
+                                figure.freeze();
     
                                 this.player = this.spawnFigure();
                             }
 
                             if(collideWith == 'figure') {
-                                figure.updateStyle('color', 'red');
+                                figure.freeze();
+
                                 this.player = this.spawnFigure();
                             }
                         },
@@ -275,7 +274,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                             }
 
                             if(collideWith == 'figure') {
-                                figure.updateStyle('color', 'yellow');
+                                figure.freeze();
                                 this.player = this.spawnFigure();
                             }
                         } 
@@ -294,8 +293,8 @@ const Game = function({renderOn, fieldSize, gridSize}){
                             }
 
                             if(collideWith == 'figure') {
-                                figure.updateStyle('color', 'magenta');
-                            this.player = this.spawnFigure();
+                                figure.freeze();
+                                this.player = this.spawnFigure();
                             }
                         },
                     });
@@ -310,9 +309,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                         onCollide: (figure, collideWith) => {
                             if(collideWith == 'fieldBorder') {
                                 // make it static
-                                figure.isFalling = false;
-                                figure.isFreezed = true;
-                                figure.updateStyle('color', 'blue');
+                                figure.freeze();
     
                                 this.player = this.spawnFigure();
                             }
