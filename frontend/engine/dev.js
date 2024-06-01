@@ -131,7 +131,6 @@ const DevUI = function(devSettings){
                     let optionContainer;
                     let object = this.devSettings[option];
 
-                    console.log(option);
                     if(object.type == 'toggle') optionContainer = this.renderToggle(option, object);
                     if(object.type == 'button-list') optionContainer = this.renderButtonList(option, object);
 
