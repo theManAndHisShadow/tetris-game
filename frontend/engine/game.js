@@ -74,11 +74,18 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
         return {
             player: null,
+            
             startingPoint: {
                 x: (renderer.context.canvas.width/2),
                 y: 13,
             },
-            field: [],
+
+            field: {
+                gridCellSize: gridSize,
+                size: fieldSize,
+                figures: [],
+                highestLine: 1,
+            },
             
             /**
              * Create figure object and adds to game field
@@ -96,7 +103,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                     // update Game stored figure ID
                     id: __generateID(),
 
-                    siblings: this.field.filter(figure => {
+                    siblings: this.field.figures.filter(figure => {
                         if(figure.id !== this.id) {
                             return figure;
                         }
@@ -111,11 +118,36 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 });
 
                 console.log('Added new figure: ', figure);
-                this.field.push(figure);
+                this.field.figures.push(figure);
 
                 return figure;
             },
 
+            checkLineCompletitions: function () {
+                const __lineChecker = (lineNumber) => {
+                    let lineStart = renderOn.height - ((lineNumber - 1) * this.field.gridCellSize); 
+                    let lineEnd = renderOn.height - (lineNumber * this.field.gridCellSize); 
+                    let targets = [];
+
+                    this.field.figures.forEach(figure => {
+                        if (figure.isFreezed === true) {
+                            figure.blocks.forEach(block => { if (block.y == lineEnd) targets.push(block); });
+                        }
+                    });
+
+                    return targets.length == this.field.size[0];
+                };
+
+                let result = __lineChecker(1); 
+                console.log(result);
+            },
+
+            setHighestLine: function(figure){
+                let line = (renderer.context.canvas.height - (figure.blocks.sort((a, b) => a.y - b.y)[0].y)) / this.field.gridCellSize;
+                this.field.highestLine = line > this.field.highestLine ? line : this.field.highestLine;
+
+                console.log('Hightest line: ' + this.field.highestLine);
+            },
             
             /**
              * Renders all filed figures 
@@ -140,7 +172,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 }
 
                 // re-render
-                this.field.forEach(fieldItem => {
+                this.field.figures.forEach(fieldItem => {
                     fieldItem.render();     
                 });
             },
@@ -161,12 +193,17 @@ const Game = function({renderOn, fieldSize, gridSize}){
                             if(collideWith == 'fieldBorder') {
                                 // make it static
                                 figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
     
                                 this.player = this.spawnFigure();
                             }
 
                             if(collideWith == 'figure') {
                                 figure.freeze();
+
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
 
                                 this.player = this.spawnFigure();
                             }
@@ -185,7 +222,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 let shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
                 shape = shape || shapesLetters[getRandomNumber(0, 6)];
 
-                this.field.forEach(figure => {
+                this.field.figures.forEach(figure => {
                     if(figure.cy == this.startingPoint.y) startPointIsFull = true;
                 })
 
@@ -241,7 +278,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 setInterval(self.gravitize.bind(self), 90 / SETTINGS.gravity);
 
                 dev_ui.devSettings.__spawnFigure.execute = (data) => {
-                    this.field = [];
+                    this.field.figures = [];
                     this.player = null;
                     this.player = this.spawnFigure(data);
                 };
@@ -275,6 +312,8 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
                             if(collideWith == 'figure') {
                                 figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
                                 this.player = this.spawnFigure();
                             }
                         } 
@@ -294,6 +333,9 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
                             if(collideWith == 'figure') {
                                 figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
+
                                 this.player = this.spawnFigure();
                             }
                         },
@@ -310,12 +352,18 @@ const Game = function({renderOn, fieldSize, gridSize}){
                             if(collideWith == 'fieldBorder') {
                                 // make it static
                                 figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
     
                                 this.player = this.spawnFigure();
                             }
 
                             if(collideWith == 'figure') {
-                                figure.updateStyle('color', 'green');
+                                // figure.updateStyle('color', 'green');
+                                figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
+
                                 this.player = this.spawnFigure();
                             }
                         },
