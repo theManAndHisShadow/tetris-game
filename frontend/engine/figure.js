@@ -494,10 +494,6 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             this.isFalling = false;
             this.isFreezed = true;
 
-            this.blocks.forEach(singleBlock => {
-                console.log(singleBlock);
-            });
-
             this.updateStyle('color', 'blue');
         },
 
