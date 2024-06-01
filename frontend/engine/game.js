@@ -124,22 +124,39 @@ const Game = function({renderOn, fieldSize, gridSize}){
             },
 
             checkLineCompletitions: function () {
+                /**
+                 * Internal helper function, returns true if target line is complete (full)
+                 * @param {number} lineNumber target line number
+                 * @returns {boolean}
+                 */
                 const __lineChecker = (lineNumber) => {
-                    let lineStart = renderOn.height - ((lineNumber - 1) * this.field.gridCellSize); 
-                    let lineEnd = renderOn.height - (lineNumber * this.field.gridCellSize); 
+                    // calculate taget line height
+                    let lineHeight = renderOn.height - (lineNumber * this.field.gridCellSize); 
+
+                    // saving target blocks
                     let targets = [];
 
+                    // check all field figures...
                     this.field.figures.forEach(figure => {
+                       //...but only freezed figures...
                         if (figure.isFreezed === true) {
-                            figure.blocks.forEach(block => { if (block.y == lineEnd) targets.push(block); });
+                             //... and their blocks, 
+                            figure.blocks.forEach(block => { 
+                                // saving block to targets array
+                                if (block.y == lineHeight) targets.push(block); 
+                            });
                         }
                     });
 
                     return targets.length == this.field.size[0];
                 };
 
-                let result = __lineChecker(1); 
-                console.log(result);
+
+                for(let line = 1; line <= this.field.highestLine; line++) {
+                    let isLineIsComplete = __lineChecker(line);
+
+                    console.log(isLineIsComplete, line);
+                }
             },
 
             setHighestLine: function(figure){
