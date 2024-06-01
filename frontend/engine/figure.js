@@ -9,6 +9,16 @@ const Block = function({id, x, y, color, size, lineGroup, parentFigureID} = {}){
         size: size,
         lineGroup: lineGroup,
         parentFigureID: parentFigureID,
+
+        deleteFrom: function(from){
+            from.forEach(figure => {
+                if(figure.id == this.parentFigureID) {
+                    figure.blocks = figure.blocks.filter(block => {
+                        return block.id !== this.id;
+                    });
+                }
+            });
+        }
     }
 };
 
@@ -332,12 +342,12 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         * @param {number} speed speed of movement (by one step)
         * @param {Function} onCollide callback function for collision events
         */
-        move: function({direction, speed, onCollide}) {
+        move: function({direction, speed, onCollide, force}) {
             // Callback function for collide event
             let onCollideCB = typeof onCollide == 'function' ? onCollide : function(){};
 
             // Checking that figure is not freezed
-            if(this.isFreezed === false) {
+            if(force === true || this.isFreezed === false) {
                 let delta = speed || this.size;
 
                 // Collision checking
@@ -391,7 +401,10 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             this.angle = (this.angle - 90) % 360;
             const newblocks = this.blocks.map(block => {
                 const { x, y } = rotatePoint(this.cx, this.cy, block.x, block.y, -90);
-                return { x: x - this.size, y: y };
+                block.x = x - this.size;
+                block.y = y;
+
+                return block;
             });
         
             // preparing some variables
