@@ -171,6 +171,12 @@ const Game = function({renderOn, fieldSize, gridSize}){
                     __drawFieldGrid(gridSize);
                 }
 
+                // re-render
+                this.field.figures.forEach(fieldItem => {
+                    fieldItem.render();     
+                });
+
+
                 if(settings.dev.__renderHighestLine.state === true) {
                     // Calculating highest line hight pixels
                     let highestLineHeight = renderer.context.canvas.height - this.field.highestLine * this.field.gridCellSize;
@@ -183,10 +189,6 @@ const Game = function({renderOn, fieldSize, gridSize}){
                     });
                 }
 
-                // re-render
-                this.field.figures.forEach(fieldItem => {
-                    fieldItem.render();     
-                });
             },
 
 
