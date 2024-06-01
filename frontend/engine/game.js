@@ -84,7 +84,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 gridCellSize: gridSize,
                 size: fieldSize,
                 figures: [],
-                highestLine: 1,
+                highestLine: 0,
             },
             
             /**
@@ -169,6 +169,18 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
                 if(settings.dev.__drawFieldGrid.state === true) {
                     __drawFieldGrid(gridSize);
+                }
+
+                if(settings.dev.__renderHighestLine.state === true) {
+                    // Calculating highest line hight pixels
+                    let highestLineHeight = renderer.context.canvas.height - this.field.highestLine * this.field.gridCellSize;
+
+                    // render current highest line
+                    renderer.drawLine({
+                        x1: 0, y1: renderer.context.canvas.height,
+                        x2: 0, y2: highestLineHeight,
+                        w: 3, c: 'red'
+                    });
                 }
 
                 // re-render

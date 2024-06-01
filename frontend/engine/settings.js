@@ -22,6 +22,12 @@ const Settings = function () {
             __renderFigureCenter: {
                 type: 'toggle',
                 label: 'Render figure center',
+                state: false,
+            },
+
+            __renderHighestLine: {
+                type: 'toggle',
+                label: 'Render highest line',
                 state: true,
             },
 
