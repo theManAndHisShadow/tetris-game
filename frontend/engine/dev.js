@@ -17,51 +17,122 @@ const DevUI = function(devSettings){
             },
 
             /**
-             * Rendering dev UI settings to HTML
+             * Creates and return toggle button
+             * @param {string} propertyName prop name of dev panel option (for example '__renderFigureCenter')
+             * @param {object} object dev panel object (label, state, type etc)
+             * @returns {HTMLElement}
              */
-            renderDevUI: function(){
+            renderToggle: function(propertyName, object){
                 /**
                  * 
                  * @param {HTMLButtonElement} target which button should get an appearance update 
                  * @param {boolean} state new state 
                  */
                 function __updateVisual(target, state){
-                    target.classList = "state-" + state;
+                    target.setAttribute("data-toggle-state", state);
                     target.innerHTML = `${state}`;
                 }
+
+                // storing some values
+                let optionTitle__text = object.label
+                let optionValue = object.state;
+
+                // create container element
+                let optionContainer = document.createElement('div');
+                optionContainer.id = 'dev-panel' + propertyName + "-option-container";
                 
+                // create option label element
+                let optionTitle = document.createElement('span');
+                optionTitle.id =  'dev-panel' + propertyName + "-option-label";
+                optionTitle.innerText = optionTitle__text + ": ";
+
+                // create toggle button element
+                let optionToggle = document.createElement('button');
+                optionToggle.id = 'dev-panel' + propertyName + "-option-" + object.type;
+                optionToggle.classList.add('toggle');
+                optionToggle.innerHTML = optionValue;
+
+                // update toggle button state
+                __updateVisual(optionToggle, object.state);
+
+                // adding handler to update toggle button state and visula at click
+                optionToggle.addEventListener('click', (e) => {
+                    object.state = object.state == true ? false : true;
+                    __updateVisual(optionToggle, object.state);
+                });
+
+                // adding to container
+                optionContainer.appendChild(optionTitle);
+                optionContainer.appendChild(optionToggle);
+
+                return optionContainer;
+            },
+
+
+
+            /**
+             * Creates and return button list element 
+             * @param {string} propertyName prop name of dev panel option (for example '__renderFigureCenter')
+             * @param {object} object dev panel object (label, state, type etc)
+             * @returns {HTMLElement}
+             */
+            renderButtonList: function(propertyName, object){
+                //storing some values
+                let optionTitle__text = object.label;
+
+                // create container element
+                let optionContainer = document.createElement('div');
+                optionContainer.id = 'dev-panel' + propertyName + "-option-container";
+                
+                // create option label element
+                let optionTitle = document.createElement('span');
+                optionTitle.id =  'dev-panel' + propertyName + "-option-label";
+                optionTitle.innerText = optionTitle__text + ": ";
+
+                // createcontainer element
+                let buttonsContainer = document.createElement('ul');
+                buttonsContainer.id = 'dev-panel' + propertyName + "-option-" + object.type;
+
+                // take values from object.list and render all list item
+                object.list.forEach(buttonName => {
+                    // creating button element (item of list)
+                    let button = document.createElement('button');
+                    button.classList.add('button');
+                    button.setAttribute('data-button-value', buttonName);
+                    button.innerText = buttonName.toUpperCase();
+
+                    buttonsContainer.appendChild(button);
+
+                    // add handler to execute some function when element clicked
+                    button.addEventListener('click', (e) => {
+                        object.execute(buttonName);
+                    });
+                });
+
+                // adding to container
+                optionContainer.appendChild(optionTitle);
+                optionContainer.appendChild(buttonsContainer);
+
+                return optionContainer;
+            },
+
+
+
+            
+            /**
+             * Rendering dev UI settings to HTML
+             */
+            renderDevUI: function(){
                 // Store settings.dev properties
                 let options = Object.keys(this.devSettings);
 
                 // Render each particular option
                 options.forEach(option => {
-                    // Below this comment: 
-                    // storing values, creating html nodes, writing labels, values
-                    // adding toggle state handlers
-                    // finally, adding all elements to HTML
-                    let optionTitle__text = devSettings[option].label
-                    let optionValue = devSettings[option].state;
+                    let optionContainer;
+                    let object = this.devSettings[option];
 
-                    let optionContainer = document.createElement('div');
-                    optionContainer.id = 'dev-panel' + option + "-option-container";
-                    
-                    let optionTitle = document.createElement('span');
-                    optionTitle.id =  'dev-panel' + option + "-option-label";
-                    optionTitle.innerText = optionTitle__text + ": ";
-
-                    let optionToggle = document.createElement('button');
-                    optionToggle.id = 'dev-panel' + option + "-option-toggle";
-                    optionToggle.innerHTML = optionValue;
-
-                    __updateVisual(optionToggle, devSettings[option].state);
-
-                    optionToggle.addEventListener('click', (e) => {
-                        devSettings[option].state = devSettings[option].state == true ? false : true;
-                        __updateVisual(optionToggle, devSettings[option].state);
-                    });
-
-                    optionContainer.appendChild(optionTitle);
-                    optionContainer.appendChild(optionToggle);
+                    if(object.type == 'toggle') optionContainer = this.renderToggle(option, object);
+                    if(object.type == 'button-list') optionContainer = this.renderButtonList(option, object);
 
                     this.html.rootNodeRef.appendChild(optionContainer);
                 });

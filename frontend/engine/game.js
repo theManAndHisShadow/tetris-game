@@ -7,264 +7,64 @@ console.log('[Log]: Starting game.js');
  */
 let SETTINGS = null;
 
-/**
- * 
- * @param {number} cx center x
- * @param {number} cy center y
- * @param {string} color color of figure
- * @param {number} size size of figure
- * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
- * @param {CanvasRenderingContext2D} renderer 
- * @returns {object}
- */
-const Figure = function({cx, cy, color, size, shape, renderer} = {}){
-    /**
-     * 
-     * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
-     * @returns 
-     */
-    function __generate(shape){
-        if(typeof shape == "string"){
-            let parts = [];
 
-            // TODO: make this part using dynamical generation
-            if(shape == "i") {
-                // how much elements in horizontal line
-                let h_count = 4;
+const Game = function({renderOn, fieldSize, gridSize}){    
+    gridSize = gridSize || 20;
+    fieldSize = fieldSize || [10, 16];
 
-                // how much elements in vertical line
-                let v_count = 1;
-
-                parts.push({
-                    x: cx - (h_count / 2) * size,
-                    y: cy - (size / 2),
-                });
-
-                parts.push({
-                    x: cx - ((h_count / 2) - 1) * size + 1,
-                    y: cy - (size / 2),
-                });
-
-                parts.push({
-                    x: cx + 2,
-                    y: cy - (size / 2),
-                });
-
-                parts.push({
-                    x: cx + size + 3,
-                    y: cy - (size / 2),
-                });
-            }
-
-            return parts;
-        } else {
-            throw new Error("Figure generating internal function '__generate' has bad shape arg");
-        }
-    }
-
-    // TODO: replace temp solution
-    shape = 'i';
-
-    return {
-        // TODO: make cx and cy correct calculating
-        cx: cx,
-        cy: cy,
-
-        isFreezed: false,
-        isFalling: true,
-
-        size: size,
-        color: color,
-        shape: shape,
-        parts: __generate(shape),
-        renderer: renderer,
-
-
-        /**
-         * Moves figure to direction
-         * @param {string} direction direction of movement
-         * @param {number} speed speed of movement (by one step)
-         * @param {Function} onFieldBorderTouch what happens when figure touches the border. Currently available ONLY for 'down' direction
-         * @param {Function} onFieldBorderCollide what happens when figure collides with the border
-         * 
-         */
-        move: function({direction, speed, onFieldBorderTouch, onFieldBorderCollide}){
-            // storing info when part touch border
-            let touchBuffer = [];
-
-            // sotring info when part collide border
-            let collisionBuffer = [];
-
-            // callback function for touch event
-            let onTouchCB = typeof onFieldBorderTouch == 'function' ? onFieldBorderTouch : function(){};
-
-            // callback function for collide event 
-            let onCollideCB = typeof onFieldBorderCollide == 'function' ? onFieldBorderCollide : function(){};
-
-            // Checking that figure on freezed
-            if(this.isFreezed === false){
-                let delta = speed || this.size;
-
-                // TODO: maybe refactor this part?
-                if(direction == 'left') {
-                    // Collision checking
-                    // Check collision for every part of figure
-                    this.parts.forEach(singlePart => {
-                        // if figure part is to the left than the field edge
-                        // that means part is collides with field edge
-                        if(singlePart.x - this.size < 0) {
-                            // save that info to buffer
-                            collisionBuffer.push(true);
-                        }
-                    });
-
-                    // if buffer length > 0 - detected collision of any part
-                    // if detected - stop moving speed (delta) and invoke collide callback function;
-                    if(collisionBuffer.length > 0) {
-                        delta = 0;
-                        onCollideCB(this);
-                    }
-
-                    // Moving
-                    this.parts.forEach(singlePart => {
-                        singlePart.x = singlePart.x - delta;
-                    });
-
-                    this.cx = this.cx - delta;
-                }
-
-                if(direction == 'right') {
-                    // Collision checking
-                    // Check collision for every part of figure
-                    this.parts.forEach(singlePart => {
-                        // if figure part is to the right than the field edge
-                        // that means part is collides with field edge
-                        if(singlePart.x > (this.renderer.context.canvas.width - this.size)) {
-                            // save that info to buffer
-                            collisionBuffer.push(true);
-                        }               
-                    });
-
-                    // if buffer length > 0 - detected collision of any part
-                    // if detected - stop moving speed (delta) and invoke collide callback function;
-                    if(collisionBuffer.length > 0) {
-                        delta = 0;  
-                        onCollideCB(this);
-                    }
-
-                    // Moving
-                    this.parts.forEach(singlePart => {
-                        singlePart.x = singlePart.x + delta;
-                        
-                    });
-
-                    this.cx = this.cx + delta;
-                }
-
-                if(direction == 'down') {
-                    // Collision checking
-                    // Check collision for every part of figure
-                    this.parts.forEach(singlePart => {
-                        // if figure part is close to the bottom of the field edge
-                        // that means part is touches field edge
-                        if(singlePart.y > (this.renderer.context.canvas.height - this.size * 2)) {
-                            // save that info to buffer
-                           touchBuffer.push(true);
-                        }
-
-                        // if figure part is to the bottom than the field edge
-                        // that means part is collides with field edge
-                        if(singlePart.y > (this.renderer.context.canvas.height - this.size)) {
-                             // save that info to buffer
-                            collisionBuffer.push(true);
-                        }         
-                    });
-
-                    // if buffer length > 0 - detected touching 
-                    // if detected - invoke touch callback function
-                    if(touchBuffer.length > 0) {
-                        onTouchCB(this);
-                    }
-
-                    // if buffer length > 0 - detected collision of any part
-                    // if detected - stop moving speed (delta) and invoke collide callback function;
-                    if(collisionBuffer.length > 0) {
-                        delta = 0;
-                        onCollideCB(this);
-                    }
-
-                    // Moving
-                    this.parts.forEach(singlePart => {
-                        singlePart.y = singlePart.y + delta;
-                    });
-
-                    this.cy = this.cy + delta;
-                }
-
-                if(direction == 'up') {
-                    // at this place in future we can add figure rotating feature
-                }
-            }
-        },
-
-        updateStyle: function(styleProperty, newValue){
-            let objectAllowedProprties = ['color', 'size'];
-
-            if(objectAllowedProprties.indexOf(styleProperty) > -1){
-                this[styleProperty] = newValue;
-                this.parts.forEach(singlePart => {
-                    singlePart[styleProperty] = newValue;
-                });
-            } else {
-                throw new Error(`Figure 'updateStyle' function has bad argument. styleProperty = ${styleProperty}`);
-            }
-        },
-
-        fall: function(){
-            this.isFalling = false;
-        },
-
-        /**
-         * Renders single figure
-         */
-        render: function(){
-            this.parts.forEach(singlePart => {
-                this.renderer.drawSquare({
-                    x: singlePart.x,
-                    y: singlePart.y,
-                    w: size,
-                    c: this.color,
-                });
-            });
-
-            if(SETTINGS.dev.__renderFigureCenter.state === true){
-                let r = 4;
-
-                this.renderer.drawPoint({
-                    x: this.cx + (r/2), 
-                    y: this.cy, 
-                    r: r, 
-                    c: 'red',
-                });
-            }
-
-            if(SETTINGS.dev.__rendeFieldFreeSpaceBoundingRect.state === true){
-                
-            }
-        },
-    }
-};
-
-
-
-const Game = function({renderOn}){
     if(renderOn){
+        renderOn.width = fieldSize[0] * gridSize;
+        renderOn.height = fieldSize[1] * gridSize;
+
+        // start point counting figure IDs
+        let basicID = 0;
+
         // private value ?
         const renderer = new Renderer({
             context: renderOn.getContext("2d"),
         });
 
         const settings = new Settings();
+
+        /**
+         * Internal helper function to generate new ID
+         * @returns 
+         */
+        function __generateID(){
+            basicID++;
+
+            return basicID;
+        }
+
+        /**
+         *  Internal helper function to draw game field grid
+         * @param {number} gridSize size of grid cell
+         * @param {string} linesColor color of grid line
+         */
+        function __drawFieldGrid(gridSize, linesColor){
+            linesColor = linesColor || '#FFA500';
+            
+            const height = renderer.context.canvas.height;
+            const width = renderer.context.canvas.width;
+            const horizontal_amount = width / gridSize;
+            const verical_amount = height / gridSize;
+
+            for(let h = 0; h <= horizontal_amount; h++){
+                for(let v = 0; v <= verical_amount; v++){
+                    renderer.drawLine({
+                        x1: gridSize * h, y1: 0,
+                        x2: gridSize * h, y2: height,
+                        c: linesColor, w: 2,
+                    });
+
+                    renderer.drawLine({
+                        x1: 0, y1: gridSize * v,
+                        x2: width, y2: gridSize * v,
+                        c: linesColor, w: 2,
+                    });
+                }
+            }
+        }
 
         const dev_ui = new DevUI(settings.dev);
 
@@ -274,11 +74,18 @@ const Game = function({renderOn}){
 
         return {
             player: null,
+            
             startingPoint: {
                 x: (renderer.context.canvas.width/2),
-                y: 15,
+                y: 13,
             },
-            field: [],
+
+            field: {
+                gridCellSize: gridSize,
+                size: fieldSize,
+                figures: [],
+                highestLine: 0,
+            },
             
             /**
              * Create figure object and adds to game field
@@ -288,24 +95,102 @@ const Game = function({renderOn}){
              * @param {string} color color of figure
              */
             addFigureToField: function({cx, cy, shape, color} = {}){
-               if((cx && cy) && (typeof cx == 'number' && typeof cy == 'number')){
-                    color = color || 'black';
-                    shape = shape || 0;
+                color = color || 'black';
+                shape = shape || 0;
 
-                    const size = 25;
-                    const figure = new Figure({
-                        cx: cx, cy: cy, color: color, size: size,
-                        shape: shape, renderer: renderer
-                    });
+                const size = 25;
+                const figure = new Figure({
+                    // update Game stored figure ID
+                    id: __generateID(),
 
-                    this.field.push(figure);
+                    siblings: this.field.figures.filter(figure => {
+                        if(figure.id !== this.id) {
+                            return figure;
+                        }
+                    }),
+                    
+                    cx: cx, 
+                    cy: cy,
+                    color: color, 
+                    size: gridSize,
+                    shape: shape, 
+                    renderer: renderer,
+                });
 
-                    return figure;
-               } else {
-                    throw new Error("Game class method 'addFigureToField' has bad cx cy args");
-               }
+                console.log('Added new figure: ', figure);
+                this.field.figures.push(figure);
+
+                return figure;
             },
 
+            checkLineCompletitions: function () {
+                /**
+                 * Internal helper function, returns true if target line is complete (full)
+                 * @param {number} lineNumber target line number
+                 * @returns {boolean}
+                 */
+                const __lineChecker = (lineNumber) => {
+                    // calculate taget line height
+                    let lineHeight = renderOn.height - (lineNumber * this.field.gridCellSize); 
+
+                    // saving target blocks
+                    let targets = [];
+
+                    // check all field figures...
+                    this.field.figures.forEach(figure => {
+                       //...but only freezed figures...
+                        if (figure.isFreezed === true) {
+                             //... and their blocks, 
+                            figure.blocks.forEach(block => { 
+                                // saving block to targets array
+                                if (block.y == lineHeight) targets.push(block); 
+                            });
+                        }
+                    });
+
+                    let state = targets.length == this.field.size[0];
+
+                    return {isComplete: state, targets};
+                };
+
+                // check lines from 1 to current highest value
+                for(let lineNum = 1; lineNum <= this.field.highestLine; lineNum++) {
+                    // get result of checker
+                    let line = __lineChecker(lineNum);
+
+                    // if checker says that line is complete
+                    if(line.isComplete === true) {
+                        // log this
+                        console.log('Line ' + lineNum + ' is complete now');
+
+                        // delete all targets from checker
+                        line.targets.forEach(targetBlock => {
+                            targetBlock.deleteFrom(this.field.figures);
+                        });
+
+                        // decrease highest value (update value after all deletions)
+                        this.field.highestLine = this.field.highestLine > 0 ? this.field.highestLine - 1 : 0;
+
+                        // forcefully move downward all remaining frozen blocks after removal
+                        this.field.figures.forEach(figure => {
+
+                            figure.move({
+                                // froce flag for ignoring 'isFreezed' state!
+                                force: true,
+                                
+                                direction: 'down',
+                            });
+                        });
+                    }
+                }
+            },
+
+            setHighestLine: function(figure){
+                let line = (renderer.context.canvas.height - (figure.blocks.sort((a, b) => a.y - b.y)[0].y)) / this.field.gridCellSize;
+                this.field.highestLine = line > this.field.highestLine ? line : this.field.highestLine;
+
+                console.log('Hightest line: ' + this.field.highestLine);
+            },
             
             /**
              * Renders all filed figures 
@@ -325,10 +210,28 @@ const Game = function({renderOn}){
                 // clear render zone manually
                 __clearRenderZone();
 
+                if(settings.dev.__drawFieldGrid.state === true) {
+                    __drawFieldGrid(gridSize);
+                }
+
                 // re-render
-                this.field.forEach(fieldItem => {
+                this.field.figures.forEach(fieldItem => {
                     fieldItem.render();     
                 });
+
+
+                if(settings.dev.__renderHighestLine.state === true) {
+                    // Calculating highest line hight pixels
+                    let highestLineHeight = renderer.context.canvas.height - this.field.highestLine * this.field.gridCellSize;
+
+                    // render current highest line
+                    renderer.drawLine({
+                        x1: 0, y1: renderer.context.canvas.height,
+                        x2: 0, y2: highestLineHeight,
+                        w: 3, c: 'red'
+                    });
+                }
+
             },
 
 
@@ -339,17 +242,29 @@ const Game = function({renderOn}){
             gravitize: function(){
                 // If gravity turn on
                 if(SETTINGS.dev.__disableGravity.state === false){
-                    // Use onFieldBorderTouch logic
-                    this.player.move({
-                        direction: 'down',
-                        onFieldBorderTouch: figure => {
-                            // make it static
-                            this.player.isFalling = false;
-                            this.player.isFreezed = true;
-                            this.player.updateStyle('color', 'blue');
+                    let direction = 'down';
 
-                            this.spawnFigure();
-                        }
+                    this.player.move({
+                        direction: direction,
+                        onCollide: (figure, collideWith) => {
+                            if(collideWith == 'fieldBorder') {
+                                // make it static
+                                figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
+    
+                                this.player = this.spawnFigure();
+                            }
+
+                            if(collideWith == 'figure') {
+                                figure.freeze();
+
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
+
+                                this.player = this.spawnFigure();
+                            }
+                        },
                     });
                 }
             },
@@ -359,18 +274,33 @@ const Game = function({renderOn}){
              * Spawn a new block and add it to game field
              * @returns {object}
              */
-            spawnFigure: function(){
-                let figure = this.addFigureToField({
-                    cx: this.startingPoint.x , 
-                    cy: this.startingPoint.y, 
-                    color: "black"
-                });
+            spawnFigure: function(shape){
+                let startPointIsFull = false;
+                let shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
+                shape = shape || shapesLetters[getRandomNumber(0, 6)];
 
-                this.player = figure;
-                this.player.isFalling = true;
-                this.player.isFreezed = false;
+                this.field.figures.forEach(figure => {
+                    if(figure.cy == this.startingPoint.y) startPointIsFull = true;
+                })
 
-                return figure;
+                if(startPointIsFull === false){
+                    let figure = this.addFigureToField({
+                        color: "black",
+
+                        // generate each time random figure
+                        shape: shape,
+                    });
+
+                    figure.isFalling = true;
+                    figure.isFreezed = false;
+
+                    return figure;
+                } else {
+                    // TODO: make game over more correct way
+                    // Now it thrown an error
+                    console.log('Start point is full! GAME OVER!');
+                    return false;
+                }
             },
 
 
@@ -404,53 +334,96 @@ const Game = function({renderOn}){
                 // update gravity impact at target figure
                 setInterval(self.gravitize.bind(self), 90 / SETTINGS.gravity);
 
+                dev_ui.devSettings.__spawnFigure.execute = (data) => {
+                    this.field.figures = [];
+                    this.player = null;
+                    this.player = this.spawnFigure(data);
+                };
+
                 // Movement managment
                 controls.on('up', () => {
                     let direction = 'up';
-                    this.player.move({
-                        direction: direction,
+
+                    // Rotating figure by pressing w/UpArrow
+                    this.player.rotate({
+                        // if fugure done full rotation
+                        onFullRotate: (figure) => {
+                            // iterate coounter
+                            figure.rotations += 1;
+
+                            console.log('Full rotations: ' + figure.rotations)
+                        }
                     });
                 });
 
                 controls.on('left', () => {
                     let direction = 'left';
-
+                    
+                    // Moving figure to left by pressing a/LeftArrow
                     this.player.move({
                         direction: direction,
-                        
-                        // demo code
-                        onFieldBorderCollide: function(figure){
-                            console.log('Figure collide with '+ direction +' border of game field');
-                        }
+                        onCollide: (figure, collideWith) => {
+                            if(collideWith == 'fieldBorder') {
+                                console.log('Figure collide with '+ direction +' border of game field');
+                            }
+
+                            if(collideWith == 'figure') {
+                                figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
+                                this.player = this.spawnFigure();
+                            }
+                        } 
                     });
                 });
 
                 controls.on('right', () => {
                     let direction = 'right';
 
+                    // Moving figure to left by pressing d/RightArrow
                     this.player.move({
                         direction: direction,
+                        onCollide: (figure, collideWith) => {
+                            if(collideWith == 'fieldBorder') {
+                                console.log('Figure collide with '+ direction +' border of game field');
+                            }
 
-                         // demo code
-                        onFieldBorderCollide: function(figure){
-                            console.log('Figure collide with '+ direction +' border of game field');
-                        }
+                            if(collideWith == 'figure') {
+                                figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
+
+                                this.player = this.spawnFigure();
+                            }
+                        },
                     });
                 });
 
                 controls.on('down', () => {
                     let direction = 'down';
 
+                    // Moving figure to down by pressing s/DownArrow
                     this.player.move({
                         direction: direction,
-                        onFieldBorderTouch: figure => {
-                            console.log('Figure touches'+ direction +' border of game field and freezed now');
+                        onCollide: (figure, collideWith) => {
+                            if(collideWith == 'fieldBorder') {
+                                // make it static
+                                figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
+    
+                                this.player = this.spawnFigure();
+                            }
 
-                            figure.isFreezed = true;
-                            figure.updateStyle('color', 'blue');
-                            
-                            this.spawnFigure();
-                        }
+                            if(collideWith == 'figure') {
+                                // figure.updateStyle('color', 'green');
+                                figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
+
+                                this.player = this.spawnFigure();
+                            }
+                        },
                     });
                 });
             }
