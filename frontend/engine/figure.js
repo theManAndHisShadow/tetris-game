@@ -1,5 +1,17 @@
 console.log('[Log]: Starting figure.js');
 
+const Block = function({x, y, color, size, lineGroup, parentFigureID} = {}){
+    return {
+        x: x,
+        y: y,
+        color: color,
+        size: size,
+        lineGroup: lineGroup,
+        parentFigureID: parentFigureID,
+    }
+};
+
+
 /**
  * 
  * @param {number} cx center x
@@ -12,7 +24,7 @@ console.log('[Log]: Starting figure.js');
  */
 const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {}){
     /**
-     * Internal helper function to get matrix of some particular shape.
+     * Internal helper function to get matrix of some blockicular shape.
      * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
      * @returns {object}
      */
@@ -21,8 +33,8 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
         // Each shape has 2 important props:
         // center of shape (for correct position, moving, rotating)
-        // shape parts configuration array (n-dimensional matrix), 
-        // where 0 - empty part, 1 - part
+        // shape blocks configuration array (n-dimensional matrix), 
+        // where 0 - empty block, 1 - block
         const shapes = {
             i: {
                 center:[2, 1],
@@ -86,7 +98,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
     }
 
     /**
-     * Internal helper function to generate parts for shape using shape-matrix.
+     * Internal helper function to generate blocks for shape using shape-matrix.
      * @param {string} shapeLetter letter of shape
      * @returns {Array}
      */
@@ -95,25 +107,30 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         let shape = __getShapeMatrix(shapeLetter);
         
         // create empty array
-        let parts = [];
+        let blocks = [];
 
         // loop through matrix 'slices' (rows)
         shape.matrix.forEach((slice, i) => {
             // now loop through each value of slice
             slice.forEach((value, j) => {
-                // if part is not empty
+                // if block is not empty
                 if(value > 0) {
-                    // generate new part
-                    parts.push({
-                        // Generating process uses offsets to generate correct pos of part
+                    // generate new block
+                    let newBlock = new Block({
                         x: cx + (size*j) - (size * shape.center[0]),
                         y: cy + (size*i) - (size * shape.center[1]),
+                        color: color,
+                        size: size,
+
+                        parentFigureID: id,
                     });
+
+                    blocks.push(newBlock);
                 }
             });
         });
 
-        return parts;
+        return blocks;
     }
 
     /**
@@ -158,11 +175,11 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         color: color,
         shape: shape,
         shapeMatrix: __getShapeMatrix(shape),
-        parts: __generateFromMatrix(shape),
+        blocks: __generateFromMatrix(shape),
         renderer: renderer,
 
         /**
-         * Method detect this.parts collision from particular side
+         * Method detect this.blocks collision from blockicular side
          * @param {Array} targets an array of target objects with which collisions are expected from a given side
          * @param {string} direction the side from which the collision is expected
          * @returns 
@@ -172,7 +189,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             * Internal helper function that can detect of object colliding from side
             * @param {object} firstObject first target object
             * @param {object} secondObject second target object
-            * @param {number} size size of object.part
+            * @param {number} size size of object.block
             * @param {string} direction the side from which the collision is expected
             * @returns 
             */
@@ -209,18 +226,18 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
             let result = false;
             let otherFigures = targets;
-            let otherParts = [];
+            let otherblocks = [];
 
-            // gather all target parts at one dimension array
+            // gather all target blocks at one dimension array
             otherFigures.forEach(figure => {
-                otherParts = otherParts.concat(figure.parts);
+                otherblocks = otherblocks.concat(figure.blocks);
             });
             
             // using two loops compare all coord using internal helper function
-            this.parts.forEach(part =>{
-                otherParts.forEach(otherPart => {
+            this.blocks.forEach(block =>{
+                otherblocks.forEach(otherblock => {
                     // store result of collision detecting from paricular side
-                    let collision = __detectCollisionOnSide(part, otherPart, this.size, direction);
+                    let collision = __detectCollisionOnSide(block, otherblock, this.size, direction);
 
                     // is detected
                     if(collision) {
@@ -244,40 +261,40 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             let collisionType = null;
             let collideWith = null;
 
-            // Saving info about collision of all parts
+            // Saving info about collision of all blocks
             let collisionBuffer = [];
 
 
-            // checking when part of figure collides with field borders
-            this.parts.forEach(singlePart => {
-                // console.log(singlePart.x, singlePart.y, singlePart.x < 0);
-                // check if part collide with left side of field border
-                if (direction === 'left' && singlePart.x == 0) {
+            // checking when block of figure collides with field borders
+            this.blocks.forEach(singleblock => {
+                // console.log(singleblock.x, singleblock.y, singleblock.x < 0);
+                // check if block collide with left side of field border
+                if (direction === 'left' && singleblock.x == 0) {
                     collisionBuffer.push('touching');
                     collideWith = 'fieldBorder';
-                } else if (direction === 'left' && singlePart.x < 0) {
+                } else if (direction === 'left' && singleblock.x < 0) {
                     collisionBuffer.push('overlapping');
                     collideWith = 'fieldBorder';
 
-                // check if part collide with right side of field border
-                } else if (direction === 'right' && singlePart.x - this.size == (this.renderer.context.canvas.width - this.size * 2)) {
+                // check if block collide with right side of field border
+                } else if (direction === 'right' && singleblock.x - this.size == (this.renderer.context.canvas.width - this.size * 2)) {
                     collisionBuffer.push('touching');
                     collideWith = 'fieldBorder';
-                 // check if part collide with bottom side of field border
-                } else if (direction === 'right' && singlePart.x > (this.renderer.context.canvas.width - this.size * 2)) {
+                 // check if block collide with bottom side of field border
+                } else if (direction === 'right' && singleblock.x > (this.renderer.context.canvas.width - this.size * 2)) {
                     collisionBuffer.push('overlapping');
                     collideWith = 'fieldBorder';
 
-                 // check if part collide with bottom side of field border
+                 // check if block collide with bottom side of field border
                 } else if (direction === 'down') {
-                    if (singlePart.y > (this.renderer.context.canvas.height - this.size*2)) {
+                    if (singleblock.y > (this.renderer.context.canvas.height - this.size*2)) {
                         collisionBuffer.push('touching');
                         collideWith = 'fieldBorder';
                     }
                 }
             });
 
-            // if some part collides with field border (watch at buffer length)
+            // if some block collides with field border (watch at buffer length)
             if (collisionBuffer.length > 0) {
                 if(collisionBuffer.indexOf('overlapping') > -1) {
                     collisionType = 'overlapping';
@@ -289,7 +306,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 collideWith = 'fieldBorder';
             }
 
-            // checking when part of figure collides with other fiqure part
+            // checking when block of figure collides with other fiqure block
             if (this.checkCollisionWith(this.siblings, direction)) {
                 collisionDetected = true;
                 collideWith = 'figure';
@@ -333,14 +350,14 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                     onCollideCB(this, collideWith);
                 }
 
-                // Moving figure parts coords
-                this.parts.forEach(singlePart => {
+                // Moving figure blocks coords
+                this.blocks.forEach(singleblock => {
                     if (direction === 'left') {
-                        singlePart.x -= delta;
+                        singleblock.x -= delta;
                     } else if (direction === 'right') {
-                        singlePart.x += delta;
+                        singleblock.x += delta;
                     } else if (direction === 'down') {
-                        singlePart.y += delta;
+                        singleblock.y += delta;
                     }
                 });
 
@@ -365,13 +382,13 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             const onFullRotateCB = typeof onFullRotate == 'function' ? onFullRotate : function() {};
         
             // saving original state and configuration of fugire
-            const originalParts = this.parts.map(part => ({ ...part }));
+            const originalblocks = this.blocks.map(block => ({ ...block }));
             const originalAngle = this.angle;
         
             // trying to rotate (clone figure)
             this.angle = (this.angle - 90) % 360;
-            const newParts = this.parts.map(part => {
-                const { x, y } = rotatePoint(this.cx, this.cy, part.x, part.y, -90);
+            const newblocks = this.blocks.map(block => {
+                const { x, y } = rotatePoint(this.cx, this.cy, block.x, block.y, -90);
                 return { x: x - this.size, y: y };
             });
         
@@ -381,10 +398,10 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             
             // Internal function to check collisions at figure rotating
             const __checkRotateCollision = () => {
-                // inside loop checking collisions for single part
-                for (const part of newParts) {
-                    // if part getting over game field
-                    if (part.x < 0 || part.x >= this.renderer.context.canvas.width || part.y >= this.renderer.context.canvas.height) {
+                // inside loop checking collisions for single block
+                for (const block of newblocks) {
+                    // if block getting over game field
+                    if (block.x < 0 || block.x >= this.renderer.context.canvas.width || block.y >= this.renderer.context.canvas.height) {
 
                         // set collision true
                         collisionWithBorder = true;
@@ -393,10 +410,10 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                         break;
                     }
         
-                    // if part collides with other figure`s part
+                    // if block collides with other figure`s block
                     for (const sibling of this.siblings) {
-                        for (const siblingPart of sibling.parts) {
-                            if (part.x === siblingPart.x && part.y === siblingPart.y) {
+                        for (const siblingblock of sibling.blocks) {
+                            if (block.x === siblingblock.x && block.y === siblingblock.y) {
                                 // set collision true
                                 collisionDetected = true;
 
@@ -421,11 +438,11 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
                     // for two directions left and right
                     for (const direction of directions) {
-                        this.parts = newParts.map(part => {
-                            const newPart = { ...part };
-                            if (direction === 'right') newPart.x += this.size;
-                            if (direction === 'left') newPart.x -= this.size;
-                            return newPart;
+                        this.blocks = newblocks.map(block => {
+                            const newblock = { ...block };
+                            if (direction === 'right') newblock.x += this.size;
+                            if (direction === 'left') newblock.x -= this.size;
+                            return newblock;
                         });
 
                         // if we finally fix collision 
@@ -444,11 +461,11 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 // restore original state from backup
                 if (collisionDetected) {
                     this.angle = originalAngle;
-                    this.parts = originalParts;
+                    this.blocks = originalblocks;
                 }
             } else {
                 // if collisin not detected, just save rotated state as new origin
-                this.parts = newParts;
+                this.blocks = newblocks;
             }
         
             // actions on figure full rotate
@@ -464,6 +481,10 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
             if(objectAllowedProprties.indexOf(styleProperty) > -1){
                 this[styleProperty] = newValue;
+
+                this.blocks.forEach(block => {
+                    block[styleProperty] = newValue;
+                });
             } else {
                 throw new Error(`Figure 'updateStyle' function has bad argument. styleProperty = ${styleProperty}`);
             }
@@ -473,10 +494,10 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
          * Renders single figure
          */
         render: function(){
-            this.parts.forEach(singlePart => {
+            this.blocks.forEach(singleblock => {
                 this.renderer.drawSquare({
-                    x: singlePart.x,
-                    y: singlePart.y,
+                    x: singleblock.x,
+                    y: singleblock.y,
                     w: size,
                     c: this.color,
                 });
