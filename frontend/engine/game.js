@@ -148,14 +148,40 @@ const Game = function({renderOn, fieldSize, gridSize}){
                         }
                     });
 
-                    return targets.length == this.field.size[0];
+                    let state = targets.length == this.field.size[0];
+
+                    return {isComplete: state, targets};
                 };
 
+                // check lines from 1 to current highest value
+                for(let lineNum = 1; lineNum <= this.field.highestLine; lineNum++) {
+                    // get result of checker
+                    let line = __lineChecker(lineNum);
 
-                for(let line = 1; line <= this.field.highestLine; line++) {
-                    let isLineIsComplete = __lineChecker(line);
+                    // if checker says that line is complete
+                    if(line.isComplete === true) {
+                        // log this
+                        console.log('Line ' + lineNum + ' is complete now');
 
-                    console.log(isLineIsComplete, line);
+                        // delete all targets from checker
+                        line.targets.forEach(targetBlock => {
+                            targetBlock.deleteFrom(this.field.figures);
+                        });
+
+                        // decrease highest value (update value after all deletions)
+                        this.field.highestLine = this.field.highestLine > 0 ? this.field.highestLine - 1 : 0;
+
+                        // forcefully move downward all remaining frozen blocks after removal
+                        this.field.figures.forEach(figure => {
+
+                            figure.move({
+                                // froce flag for ignoring 'isFreezed' state!
+                                force: true,
+                                
+                                direction: 'down',
+                            });
+                        });
+                    }
                 }
             },
 
