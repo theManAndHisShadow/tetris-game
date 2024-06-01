@@ -133,7 +133,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         let spawPointX = ((renderer.context.canvas.width / size) / 2) * size;
 
         // verical pos
-        let spawPointY = __getShapeMatrix(shape).center[1] * size;
+        let spawPointY = __getShapeMatrix(shape).center[1] * size * 2;
 
         return { x: spawPointX, y: spawPointY }
     }
@@ -151,6 +151,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         cx: cx,
         cy: cy,
         angle: 0,
+        rotations: 0,
 
         // default spawn point of figure
         spawnPoint: __setSpawnPoint(shape, size),
@@ -163,6 +164,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         size: size,
         color: color,
         shape: shape,
+        shapeMatrix: __getShapeMatrix(shape),
         parts: __generateFromMatrix(shape),
         renderer: renderer,
 
@@ -246,6 +248,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         */
         checkCollision: function(direction) {
             let collisionDetected = false;
+            let collisionType = null;
             let collideWith = null;
 
             // Saving info about collision of all parts
@@ -254,18 +257,28 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
             // checking when part of figure collides with field borders
             this.parts.forEach(singlePart => {
+                // console.log(singlePart.x, singlePart.y, singlePart.x < 0);
                 // check if part collide with left side of field border
-                if (direction === 'left' && singlePart.x - this.size < 0) {
-                    collisionBuffer.push(true);
+                if (direction === 'left' && singlePart.x == 0) {
+                    collisionBuffer.push('touching');
                     collideWith = 'fieldBorder';
+                } else if (direction === 'left' && singlePart.x < 0) {
+                    collisionBuffer.push('overlapping');
+                    collideWith = 'fieldBorder';
+
                 // check if part collide with right side of field border
-                } else if (direction === 'right' && singlePart.x > (this.renderer.context.canvas.width - this.size * 2)) {
-                    collisionBuffer.push(true);
+                } else if (direction === 'right' && singlePart.x - this.size == (this.renderer.context.canvas.width - this.size * 2)) {
+                    collisionBuffer.push('touching');
                     collideWith = 'fieldBorder';
+                 // check if part collide with bottom side of field border
+                } else if (direction === 'right' && singlePart.x > (this.renderer.context.canvas.width - this.size * 2)) {
+                    collisionBuffer.push('overlapping');
+                    collideWith = 'fieldBorder';
+
                  // check if part collide with bottom side of field border
                 } else if (direction === 'down') {
                     if (singlePart.y > (this.renderer.context.canvas.height - this.size*2)) {
-                        collisionBuffer.push(true);
+                        collisionBuffer.push('touching');
                         collideWith = 'fieldBorder';
                     }
                 }
@@ -273,6 +286,12 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
             // if some part collides with field border (watch at buffer length)
             if (collisionBuffer.length > 0) {
+                if(collisionBuffer.indexOf('overlapping') > -1) {
+                    collisionType = 'overlapping';
+                } else {
+                    collisionType = 'touching';
+                }
+
                 collisionDetected = true;
                 collideWith = 'fieldBorder';
             }
@@ -282,15 +301,15 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 collisionDetected = true;
                 collideWith = 'figure';
 
-                // Additional check for bottom collidoing
+                // Additional check for bottom colliding
                 if (direction === 'left' || direction === 'right') {
                     if (!this.checkCollisionWith(this.siblings, 'down')) {
-                        collideWith = 'side';
+                        collideWith = 'fieldBorder';
                     }
                 }
             }
 
-            return { collisionDetected, collideWith };
+            return { collisionDetected, collisionType, collideWith };
         },
 
 
@@ -310,7 +329,10 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 let delta = speed || this.size;
 
                 // Collision checking
-                let { collisionDetected, collideWith } = this.checkCollision(direction);
+                let { collisionDetected, collisionType, collideWith } = this.checkCollision(direction);
+
+                // console.log(collisionDetected, collisionType, collideWith)
+                // console.log(this.id);
 
                 // Handle collisions (with fieldBorder or figure)
                 if (collisionDetected) {
@@ -343,19 +365,104 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
         /**
          * Rotates an object by counterclockwise at game field
+         * @param {Function} onFullRotate action at figure full rotate
          */
-        rotate: function(){
-            // Save to object values between 0 and -360 by each time when its rotates
-            this.angle = (this.angle - 90) < -360 ? 0 : (this.angle - 90);
-
-            // Rotate each part of figure
-            this.parts.forEach(part => {
-                // Rotate x and y coords
-                let {x, y} = rotatePoint(this.cx, this.cy, part.x, part.y, -90);
-                
-                part.x = x - this.size;
-                part.y = y;
+        rotate: function({onFullRotate} = {}) {
+            // callback function for figure full rotate event
+            const onFullRotateCB = typeof onFullRotate == 'function' ? onFullRotate : function() {};
+        
+            // saving original state and configuration of fugire
+            const originalParts = this.parts.map(part => ({ ...part }));
+            const originalAngle = this.angle;
+        
+            // trying to rotate (clone figure)
+            this.angle = (this.angle - 90) % 360;
+            const newParts = this.parts.map(part => {
+                const { x, y } = rotatePoint(this.cx, this.cy, part.x, part.y, -90);
+                return { x: x - this.size, y: y };
             });
+        
+            // preparing some variables
+            let collisionDetected = false;
+            let collisionWithBorder = false;
+            
+            // Internal function to check collisions at figure rotating
+            const __checkRotateCollision = () => {
+                // inside loop checking collisions for single part
+                for (const part of newParts) {
+                    // if part getting over game field
+                    if (part.x < 0 || part.x >= this.renderer.context.canvas.width || part.y >= this.renderer.context.canvas.height) {
+
+                        // set collision true
+                        collisionWithBorder = true;
+                        collisionDetected = true;
+                        // break loop
+                        break;
+                    }
+        
+                    // if part collides with other figure`s part
+                    for (const sibling of this.siblings) {
+                        for (const siblingPart of sibling.parts) {
+                            if (part.x === siblingPart.x && part.y === siblingPart.y) {
+                                // set collision true
+                                collisionDetected = true;
+
+                                // break loop
+                                break;
+                            }
+                        }
+                        if (collisionDetected) break;
+                    }
+                    if (collisionDetected) break;
+                }
+            };
+            
+            // checking collision
+            __checkRotateCollision();
+            
+            // if collisin detected
+            if (collisionDetected) {
+                if (collisionWithBorder) {
+                    // Trying to fix it using 'position compensation'
+                    const directions = ['right', 'left'];
+
+                    // for two directions left and right
+                    for (const direction of directions) {
+                        this.parts = newParts.map(part => {
+                            const newPart = { ...part };
+                            if (direction === 'right') newPart.x += this.size;
+                            if (direction === 'left') newPart.x -= this.size;
+                            return newPart;
+                        });
+
+                        // if we finally fix collision 
+                        // setting collision false
+                        collisionDetected = false;
+
+                        // after one compensation checking collision again
+                        __checkRotateCollision();
+
+                        // if collision fixed - break the loop
+                        if (!collisionDetected) break;
+                    }
+                }
+                
+                // if we cant fix problem
+                // restore original state from backup
+                if (collisionDetected) {
+                    this.angle = originalAngle;
+                    this.parts = originalParts;
+                }
+            } else {
+                // if collisin not detected, just save rotated state as new origin
+                this.parts = newParts;
+            }
+        
+            // actions on figure full rotate
+            if (this.angle % 360 === 0) {
+                // invoke callback on figure full rotate
+                onFullRotateCB(this);
+            }
         },
 
 
@@ -575,9 +682,10 @@ const Game = function({renderOn, fieldSize, gridSize}){
              * Spawn a new block and add it to game field
              * @returns {object}
              */
-            spawnFigure: function(){
+            spawnFigure: function(shape){
                 let startPointIsFull = false;
                 let shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
+                shape = shape || shapesLetters[getRandomNumber(0, 6)];
 
                 this.field.forEach(figure => {
                     if(figure.cy == this.startingPoint.y) startPointIsFull = true;
@@ -588,7 +696,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                         color: "black",
 
                         // generate each time random figure
-                        shape: shapesLetters[getRandomNumber(0, 6)],
+                        shape: shape,
                     });
 
                     figure.isFalling = true;
@@ -634,12 +742,26 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 // update gravity impact at target figure
                 setInterval(self.gravitize.bind(self), 90 / SETTINGS.gravity);
 
+                dev_ui.devSettings.__spawnFigure.execute = (data) => {
+                    this.field = [];
+                    this.player = null;
+                    this.player = this.spawnFigure(data);
+                };
+
                 // Movement managment
                 controls.on('up', () => {
                     let direction = 'up';
 
                     // Rotating figure by pressing w/UpArrow
-                    this.player.rotate();
+                    this.player.rotate({
+                        // if fugure done full rotation
+                        onFullRotate: (figure) => {
+                            // iterate coounter
+                            figure.rotations += 1;
+
+                            console.log('Full rotations: ' + figure.rotations)
+                        }
+                    });
                 });
 
                 controls.on('left', () => {

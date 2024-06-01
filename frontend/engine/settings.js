@@ -15,7 +15,7 @@ const Settings = function () {
             __disableGravity: {
                 type: 'toggle',
                 label: 'disable gravity',
-                state: true,
+                state: false,
             },
 
             // draw dot to figure center
