@@ -17,7 +17,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
         renderOn.height = fieldSize[1] * gridSize;
 
         // start point counting figure IDs
-        let basicID = -1;
+        let basicID = 0;
 
         // private value ?
         const renderer = new Renderer({
