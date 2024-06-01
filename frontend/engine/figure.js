@@ -1,7 +1,8 @@
 console.log('[Log]: Starting figure.js');
 
-const Block = function({x, y, color, size, lineGroup, parentFigureID} = {}){
+const Block = function({id, x, y, color, size, lineGroup, parentFigureID} = {}){
     return {
+        id: id,
         x: x,
         y: y,
         color: color,
@@ -117,6 +118,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 if(value > 0) {
                     // generate new block
                     let newBlock = new Block({
+                        id: blocks.length + 1,
                         x: cx + (size*j) - (size * shape.center[0]),
                         y: cy + (size*i) - (size * shape.center[1]),
                         color: color,
