@@ -34,13 +34,6 @@ const Settings = function () {
                 state: true,
             },
 
-            // draw bounding rect of figure
-            __rendeFieldFreeSpaceBoundingRect: {
-                type: 'toggle',
-                label: 'Render free space rect',
-                state: true,
-            },
-
             __drawFieldGrid: {
                 type: 'toggle',
                 label: 'Render field grid',
