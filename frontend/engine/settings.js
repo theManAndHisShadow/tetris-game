@@ -52,8 +52,8 @@ const Settings = function () {
 
         themes: {
             night: {
-                fieldColor: '#1c202f',
-                gridColor: '#0f1426',
+                fieldColor: 'black',
+                gridColor: '#1c202f',
                 figures: {
                     i: '#f94144',
                     j: '#f3722c',

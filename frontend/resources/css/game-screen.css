@@ -17,14 +17,28 @@
     box-shadow: 1px 2px 40px 10px #817f7f17;
 }
 
-#app__render-zone {
-    background: #1c202f;
-    position: relative;
-    float: left;
+#app__screen {
+    width: 621px;
+    background: black;
+    height: fit-content;
+    padding: 15px;
+    margin: 0;
+}
+
+#app__screen canvas {
+    display: block;
     margin: 0 auto;
 }
 
 #app__restart-button {
     position: relative;
     left: 10px;
+}
+
+#screen__scores-display {
+    color: white;
+    position: absolute;
+    width: fit-content;
+    top: 10px;
+    right: 20px;
 }

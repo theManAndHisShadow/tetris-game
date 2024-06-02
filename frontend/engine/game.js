@@ -8,23 +8,29 @@ console.log('[Log]: Starting game.js');
 let SETTINGS = null;
 
 
-const Game = function({renderOn, fieldSize, gridCellSize}){    
+const Game = function({screen, fieldSize, gridCellSize}){    
     gridCellSize = gridCellSize || 20;
     fieldSize = fieldSize || [10, 16];
 
-    if(renderOn){
-        renderOn.width = fieldSize[0] * gridCellSize;
-        renderOn.height = fieldSize[1] * gridCellSize;
+    if(screen){
+        // creating game canvas
+        let canvas = document.createElement('canvas');
+        screen.appendChild(canvas);
+
+        // setting canvas based on fieldSize and gridCellSize (in pixels)
+        canvas.width = fieldSize[0] * gridCellSize;
+        canvas.height = fieldSize[1] * gridCellSize;
 
         // start point counting figure IDs
         let basicID = 0;
 
-        // private value ?
         const renderer = new Renderer({
-            context: renderOn.getContext("2d"),
+            context: canvas.getContext("2d"),
         });
 
         const settings = new Settings();
+
+        const ui = new UI({parentScreen: screen});
 
         /**
          * Internal helper function to generate new ID
@@ -68,11 +74,12 @@ const Game = function({renderOn, fieldSize, gridCellSize}){
 
         const dev_ui = new DevUI(settings.dev);
 
-        const controls = new Controls({target: renderOn});
+        const controls = new Controls({target: screen});
 
         const fps = (1000 / 25);
 
         return {
+            screen: screen,
             player: null,
             
             startingPoint: {
@@ -86,6 +93,8 @@ const Game = function({renderOn, fieldSize, gridCellSize}){
                 figures: [],
                 highestLine: 0,
             },
+
+            ui: ui,
             
             /**
              * Create figure object and adds to game field
@@ -131,7 +140,7 @@ const Game = function({renderOn, fieldSize, gridCellSize}){
                  */
                 const __lineChecker = (lineNumber) => {
                     // calculate taget line height
-                    let lineHeight = renderOn.height - (lineNumber * this.field.gridCellSize); 
+                    let lineHeight = renderer.context.canvas.height - (lineNumber * this.field.gridCellSize); 
 
                     // saving target blocks
                     let targets = [];
@@ -181,6 +190,9 @@ const Game = function({renderOn, fieldSize, gridCellSize}){
                                 direction: 'down',
                             });
                         });
+                        
+                        // 10 point per deleted block
+                        this.ui.scores.add(this.field.size[0] * 10);
                     }
                 }
             },
@@ -325,6 +337,8 @@ const Game = function({renderOn, fieldSize, gridCellSize}){
 
                 dev_ui.init();
 
+                ui.init();
+
                 // binding a settings object to a global variable
                 SETTINGS = settings;
 
@@ -448,6 +462,6 @@ const Game = function({renderOn, fieldSize, gridCellSize}){
         }
 
     } else {
-        throw new Error("Game class param 'renderOn' has bad value");
+        throw new Error("Game class param 'screen' has bad value");
     }
 }
