@@ -81,11 +81,6 @@ const Game = function({screen, fieldSize, gridCellSize}){
         return {
             screen: screen,
             player: null,
-            
-            startingPoint: {
-                x: (renderer.context.canvas.width/2),
-                y: 13,
-            },
 
             field: {
                 gridCellSize: gridCellSize,
@@ -298,9 +293,9 @@ const Game = function({screen, fieldSize, gridCellSize}){
                 let shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
                 shape = shape || shapesLetters[getRandomNumber(0, 6)];
 
-                this.field.figures.forEach(figure => {
-                    if(figure.cy == this.startingPoint.y) startPointIsFull = true;
-                })
+                // Now the end of the game is considered from the moment the counter reaches the highest point, 
+                // ...that is, the height of the field (in blocks) minus 2 blocks
+                if(this.field.highestLine > this.field.size[1] -2) startPointIsFull = true;
 
                 if(startPointIsFull === false){
                     let figure = this.addFigureToField({
@@ -315,9 +310,11 @@ const Game = function({screen, fieldSize, gridCellSize}){
 
                     return figure;
                 } else {
-                    // TODO: make game over more correct way
-                    // Now it thrown an error
-                    console.log('Start point is full! GAME OVER!');
+                    // TODO: add some visual
+                    let endMessage = 'Game over! Your score: ' + this.ui.scores.value;
+
+                    console.log(endMessage);
+                    alert(endMessage);
                     return false;
                 }
             },
