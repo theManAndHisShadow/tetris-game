@@ -57,6 +57,22 @@ const Settings = function () {
         // speed of figure moving to bottom
         gravity: 0.1,
 
+        themes: {
+            night: {
+                fieldColor: '#1c202f',
+                gridColor: '#0f1426',
+                figures: {
+                    i: '#f94144',
+                    j: '#f3722c',
+                    l: '#f8961e',
+                    o: '#f9c74f',
+                    t: '#90be6d',
+                    s: '#43aa8b',
+                    z: '#577590',
+                },
+            }
+        },
+
         init: function () {
             console.log('[Log]: initializing Settings');
 

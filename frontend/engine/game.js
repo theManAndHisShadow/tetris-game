@@ -8,13 +8,13 @@ console.log('[Log]: Starting game.js');
 let SETTINGS = null;
 
 
-const Game = function({renderOn, fieldSize, gridSize}){    
-    gridSize = gridSize || 20;
+const Game = function({renderOn, fieldSize, gridCellSize}){    
+    gridCellSize = gridCellSize || 20;
     fieldSize = fieldSize || [10, 16];
 
     if(renderOn){
-        renderOn.width = fieldSize[0] * gridSize;
-        renderOn.height = fieldSize[1] * gridSize;
+        renderOn.width = fieldSize[0] * gridCellSize;
+        renderOn.height = fieldSize[1] * gridCellSize;
 
         // start point counting figure IDs
         let basicID = 0;
@@ -38,29 +38,29 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
         /**
          *  Internal helper function to draw game field grid
-         * @param {number} gridSize size of grid cell
+         * @param {number} gridCellSize size of grid cell
          * @param {string} linesColor color of grid line
          */
-        function __drawFieldGrid(gridSize, linesColor){
-            linesColor = linesColor || '#FFA500';
+        function __drawFieldGrid(gridCellSize, linesColor){
+            linesColor = linesColor || SETTINGS.themes.night.gridColor;
             
             const height = renderer.context.canvas.height;
             const width = renderer.context.canvas.width;
-            const horizontal_amount = width / gridSize;
-            const verical_amount = height / gridSize;
+            const horizontal_amount = width / gridCellSize;
+            const verical_amount = height / gridCellSize;
 
             for(let h = 0; h <= horizontal_amount; h++){
                 for(let v = 0; v <= verical_amount; v++){
                     renderer.drawLine({
-                        x1: gridSize * h, y1: 0,
-                        x2: gridSize * h, y2: height,
+                        x1: gridCellSize * h, y1: 0,
+                        x2: gridCellSize * h, y2: height,
                         c: linesColor, w: 2,
                     });
 
                     renderer.drawLine({
-                        x1: 0, y1: gridSize * v,
-                        x2: width, y2: gridSize * v,
-                        c: linesColor, w: 2,
+                        x1: 0, y1: gridCellSize * v,
+                        x2: width, y2: gridCellSize * v,
+                        c: linesColor, w: 1,
                     });
                 }
             }
@@ -81,7 +81,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
             },
 
             field: {
-                gridCellSize: gridSize,
+                gridCellSize: gridCellSize,
                 size: fieldSize,
                 figures: [],
                 highestLine: 0,
@@ -112,7 +112,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                     cx: cx, 
                     cy: cy,
                     color: color, 
-                    size: gridSize,
+                    size: gridCellSize,
                     shape: shape, 
                     renderer: renderer,
                 });
@@ -210,8 +210,15 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 // clear render zone manually
                 __clearRenderZone();
 
+                renderer.drawRect({
+                    x: 0, y: 0,
+                    w: renderer.context.canvas.width,
+                    h: renderer.context.canvas.height,
+                    c: SETTINGS.themes.night.fieldColor,
+                })
+
                 if(settings.dev.__drawFieldGrid.state === true) {
-                    __drawFieldGrid(gridSize);
+                    __drawFieldGrid(gridCellSize);
                 }
 
                 // re-render
@@ -285,7 +292,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
                 if(startPointIsFull === false){
                     let figure = this.addFigureToField({
-                        color: "black",
+                        color: SETTINGS.themes.night.figures[shape],
 
                         // generate each time random figure
                         shape: shape,
@@ -334,11 +341,22 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 // update gravity impact at target figure
                 setInterval(self.gravitize.bind(self), 90 / SETTINGS.gravity);
 
+                // manual fugire spawn
                 dev_ui.devSettings.__spawnFigure.execute = (data) => {
                     this.field.figures = [];
                     this.player = null;
                     this.player = this.spawnFigure(data);
                 };
+                
+                // some panel theming
+                if(dev_ui.devSettings.__devMode.state === true) {
+                    let devPanel = document.querySelector('#dev-panel');
+                    let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
+
+                    manualSpawnButtons.forEach(spawnButton => { 
+                        spawnButton.style.background = SETTINGS.themes.night.figures[spawnButton.getAttribute('data-button-value')] 
+                    });
+                }
 
                 // Movement managment
                 controls.on('up', () => {

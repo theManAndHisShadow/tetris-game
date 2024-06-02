@@ -1,11 +1,10 @@
 #dev-panel {
-    background: #0000003b;
+    background: #44444461;
     width: fit-content;
     padding: 10px;
     border-radius: 5px;
     margin: 6px;
-
-    color: #000000d1;
+    color: #e7e7e7d1;
     font-family: monospace;
 }
 
@@ -31,7 +30,7 @@ button.toggle  {
 }
 
 [data-toggle-state="false"] {
-    color: #6a0000;
+    color: #c62424;
 }
 
 button.button {

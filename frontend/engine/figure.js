@@ -509,7 +509,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             this.isFalling = false;
             this.isFreezed = true;
 
-            this.updateStyle('color', 'blue');
+            // this.updateStyle('color', 'blue');
         },
 
         /**
