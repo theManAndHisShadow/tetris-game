@@ -46,10 +46,11 @@ const Renderer = function({context}) {
 
             /**
              * Draws a rectangle
-             * @param {number} x
-             * @param {number} y
-             * @param {number} w
-             * @param {string} c
+             * @param {number} x position at x axis
+             * @param {number} y position at y axis
+             * @param {number} w width of rect
+             * @param {number} h height of rect
+             * @param {string} c color of rect
              */
             drawRect: function({x, y, w, h, c} = {}){
                 this.context.fillStyle = c;
@@ -59,10 +60,10 @@ const Renderer = function({context}) {
 
             /**
              * Draws a square
-             * @param {number} x
-             * @param {number} y
-             * @param {number} w
-             * @param {string} c
+             * @param {number} x position at x axis
+             * @param {number} y position at y axis
+             * @param {number} w width of square
+             * @param {string} c color of square
              */
             drawSquare: function({x, y, w, c} = {}){
                 this.drawRect({x: x, y: y, w: w, h: w, c: c});
