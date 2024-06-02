@@ -3,6 +3,9 @@ console.log('[Log]: Starting settings.js');
 const Settings = function () {
 
     return {
+        // speed of figure moving to bottom
+        gravity: 0.1,
+        
         // Storing some props for dev & debugging purposes
         dev: {
             // globally turn on or off dev mode
@@ -53,9 +56,6 @@ const Settings = function () {
                 execute: null,
             },
         },
-
-        // speed of figure moving to bottom
-        gravity: 0.1,
 
         themes: {
             night: {
