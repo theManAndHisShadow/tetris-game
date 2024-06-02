@@ -535,10 +535,6 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                     c: 'red',
                 });
             }
-
-            if(SETTINGS.dev.__rendeFieldFreeSpaceBoundingRect.state === true){
-                
-            }
         },
     }
 };
