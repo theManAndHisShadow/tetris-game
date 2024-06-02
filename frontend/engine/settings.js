@@ -24,19 +24,19 @@ const Settings = function () {
             // draw dot to figure center
             __renderFigureCenter: {
                 type: 'toggle',
-                label: 'Render figure center',
+                label: 'render figure center',
                 state: false,
             },
 
             __renderHighestLine: {
                 type: 'toggle',
-                label: 'Render highest line',
+                label: 'render highest line',
                 state: true,
             },
 
             __drawFieldGrid: {
                 type: 'toggle',
-                label: 'Render field grid',
+                label: 'render field grid',
                 state: true,
             },
 
