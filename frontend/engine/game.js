@@ -188,6 +188,9 @@ const Game = function({screen, fieldSize, gridCellSize}){
                         
                         // 10 point per deleted block
                         this.ui.scores.add(this.field.size[0] * 10);
+
+                        // additional checking after line is deleted
+                        this.checkLineCompletitions();
                     }
                 }
             },

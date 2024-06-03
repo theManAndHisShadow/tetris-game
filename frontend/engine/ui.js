@@ -7,8 +7,6 @@ const UI = function({parentScreen} = {}){
             value: 0,
 
             add: function(value){
-                console.log(this.value);
-
                 this.value = this.value + value;
                 this.html.innerText = 'Scores: ' + this.value;
 
