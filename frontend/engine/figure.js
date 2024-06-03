@@ -240,8 +240,6 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             let otherFigures = targets;
             let otherblocks = [];
 
-            console.log(otherFigures, this.color);
-
             // gather all target blocks at one dimension array
             otherFigures.forEach(figure => {
                 otherblocks = otherblocks.concat(figure.blocks);
@@ -322,7 +320,6 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
             // checking when block of figure collides with other fiqure block
             if (this.checkCollisionWith(this.siblings, direction)) {
-                console.log(this);
                 collisionDetected = true;
                 collideWith = 'figure';
 
