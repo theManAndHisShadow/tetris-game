@@ -458,6 +458,21 @@ const Game = function({screen, fieldSize, gridCellSize}){
                         },
                     });
                 });
+                
+                controls.on('space', () => {
+                    // at space key fast move figure to down
+                    this.player.moveDownUntilCollide({
+                        // when it colliding with something
+                        onCollide: figure => {
+                            // start starndart procedure
+                            figure.freeze();
+                            this.setHighestLine(figure);
+                            this.checkLineCompletitions();
+
+                            this.player = this.spawnFigure();
+                        },
+                    });
+                });
             }
         }
 

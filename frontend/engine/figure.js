@@ -383,6 +383,34 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 }
             }
         },
+
+        /**
+         * Moves figure to down until it collides with other figure/field border
+         * @param {Function} onCollide callback function that invokes when colliding detected
+         */
+        moveDownUntilCollide: function({onCollide}){
+            // creating main variable
+            let collideDetected = false;
+
+            // setting cb function
+            let onCollideCB = typeof onCollide == 'function' ? onCollide : function() {};
+
+            // loop action until colliding is not detected
+            while(!collideDetected) {
+                // move down
+                this.move({
+                    direction: 'down',
+
+                    // when colliding detected
+                    onCollide: figure => {
+                        // breake loop
+                        collideDetected = true;
+                        
+                        onCollideCB(figure);
+                    }
+                });
+            }
+        },
         
 
         /**
