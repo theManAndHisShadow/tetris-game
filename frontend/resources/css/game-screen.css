@@ -4,29 +4,41 @@
 }
 
 #root {
-    background: #858585;
+    background: #060606;
     width: 100%;
     height: 100%;
     position: absolute;
 }
 
 #app {
-    background: silver;
-    width: 400px;
-    max-height: 400px;
+    background: #64646412;
     padding: 15px;
-    border-radius: 10px;
-    border: 1px solid rgb(0 0 0 / 43%);
+    border: 1px solid rgb(255 255 255 / 4%);
+    /* box-shadow: 1px 2px 40px 10px #817f7f17; */
 }
 
-#app__render-zone {
-    background: white;
-    position: relative;
-    float: left;
+#app__screen {
+    width: 621px;
+    background: black;
+    height: fit-content;
+    padding: 15px;
+    margin: 0;
+}
+
+#app__screen canvas {
+    display: block;
     margin: 0 auto;
 }
 
 #app__restart-button {
     position: relative;
     left: 10px;
+}
+
+#screen__scores-display {
+    color: white;
+    position: absolute;
+    width: fit-content;
+    top: 32px;
+    right: 130px;
 }

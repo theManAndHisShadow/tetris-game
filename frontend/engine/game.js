@@ -8,23 +8,29 @@ console.log('[Log]: Starting game.js');
 let SETTINGS = null;
 
 
-const Game = function({renderOn, fieldSize, gridSize}){    
-    gridSize = gridSize || 20;
+const Game = function({screen, fieldSize, gridCellSize}){    
+    gridCellSize = gridCellSize || 20;
     fieldSize = fieldSize || [10, 16];
 
-    if(renderOn){
-        renderOn.width = fieldSize[0] * gridSize;
-        renderOn.height = fieldSize[1] * gridSize;
+    if(screen){
+        // creating game canvas
+        let canvas = document.createElement('canvas');
+        screen.appendChild(canvas);
+
+        // setting canvas based on fieldSize and gridCellSize (in pixels)
+        canvas.width = fieldSize[0] * gridCellSize;
+        canvas.height = fieldSize[1] * gridCellSize;
 
         // start point counting figure IDs
         let basicID = 0;
 
-        // private value ?
         const renderer = new Renderer({
-            context: renderOn.getContext("2d"),
+            context: canvas.getContext("2d"),
         });
 
         const settings = new Settings();
+
+        const ui = new UI({parentScreen: screen});
 
         /**
          * Internal helper function to generate new ID
@@ -38,29 +44,29 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
         /**
          *  Internal helper function to draw game field grid
-         * @param {number} gridSize size of grid cell
+         * @param {number} gridCellSize size of grid cell
          * @param {string} linesColor color of grid line
          */
-        function __drawFieldGrid(gridSize, linesColor){
-            linesColor = linesColor || '#FFA500';
+        function __drawFieldGrid(gridCellSize, linesColor){
+            linesColor = linesColor || SETTINGS.themes.night.gridColor;
             
             const height = renderer.context.canvas.height;
             const width = renderer.context.canvas.width;
-            const horizontal_amount = width / gridSize;
-            const verical_amount = height / gridSize;
+            const horizontal_amount = width / gridCellSize;
+            const verical_amount = height / gridCellSize;
 
             for(let h = 0; h <= horizontal_amount; h++){
                 for(let v = 0; v <= verical_amount; v++){
                     renderer.drawLine({
-                        x1: gridSize * h, y1: 0,
-                        x2: gridSize * h, y2: height,
+                        x1: gridCellSize * h, y1: 0,
+                        x2: gridCellSize * h, y2: height,
                         c: linesColor, w: 2,
                     });
 
                     renderer.drawLine({
-                        x1: 0, y1: gridSize * v,
-                        x2: width, y2: gridSize * v,
-                        c: linesColor, w: 2,
+                        x1: 0, y1: gridCellSize * v,
+                        x2: width, y2: gridCellSize * v,
+                        c: linesColor, w: 1,
                     });
                 }
             }
@@ -68,24 +74,22 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
         const dev_ui = new DevUI(settings.dev);
 
-        const controls = new Controls({target: renderOn});
+        const controls = new Controls({target: screen});
 
         const fps = (1000 / 25);
 
         return {
+            screen: screen,
             player: null,
-            
-            startingPoint: {
-                x: (renderer.context.canvas.width/2),
-                y: 13,
-            },
 
             field: {
-                gridCellSize: gridSize,
+                gridCellSize: gridCellSize,
                 size: fieldSize,
                 figures: [],
                 highestLine: 0,
             },
+
+            ui: ui,
             
             /**
              * Create figure object and adds to game field
@@ -112,7 +116,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                     cx: cx, 
                     cy: cy,
                     color: color, 
-                    size: gridSize,
+                    size: gridCellSize,
                     shape: shape, 
                     renderer: renderer,
                 });
@@ -131,7 +135,7 @@ const Game = function({renderOn, fieldSize, gridSize}){
                  */
                 const __lineChecker = (lineNumber) => {
                     // calculate taget line height
-                    let lineHeight = renderOn.height - (lineNumber * this.field.gridCellSize); 
+                    let lineHeight = renderer.context.canvas.height - (lineNumber * this.field.gridCellSize); 
 
                     // saving target blocks
                     let targets = [];
@@ -181,6 +185,12 @@ const Game = function({renderOn, fieldSize, gridSize}){
                                 direction: 'down',
                             });
                         });
+                        
+                        // 10 point per deleted block
+                        this.ui.scores.add(this.field.size[0] * 10);
+
+                        // additional checking after line is deleted
+                        this.checkLineCompletitions();
                     }
                 }
             },
@@ -210,8 +220,15 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 // clear render zone manually
                 __clearRenderZone();
 
+                renderer.drawRect({
+                    x: 0, y: 0,
+                    w: renderer.context.canvas.width,
+                    h: renderer.context.canvas.height,
+                    c: SETTINGS.themes.night.fieldColor,
+                })
+
                 if(settings.dev.__drawFieldGrid.state === true) {
-                    __drawFieldGrid(gridSize);
+                    __drawFieldGrid(gridCellSize);
                 }
 
                 // re-render
@@ -279,13 +296,13 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 let shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
                 shape = shape || shapesLetters[getRandomNumber(0, 6)];
 
-                this.field.figures.forEach(figure => {
-                    if(figure.cy == this.startingPoint.y) startPointIsFull = true;
-                })
+                // Now the end of the game is considered from the moment the counter reaches the highest point, 
+                // ...that is, the height of the field (in blocks) minus 2 blocks
+                if(this.field.highestLine > this.field.size[1] -2) startPointIsFull = true;
 
                 if(startPointIsFull === false){
                     let figure = this.addFigureToField({
-                        color: "black",
+                        color: SETTINGS.themes.night.figures[shape],
 
                         // generate each time random figure
                         shape: shape,
@@ -296,9 +313,11 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
                     return figure;
                 } else {
-                    // TODO: make game over more correct way
-                    // Now it thrown an error
-                    console.log('Start point is full! GAME OVER!');
+                    // TODO: add some visual
+                    let endMessage = 'Game over! Your score: ' + this.ui.scores.value;
+
+                    console.log(endMessage);
+                    alert(endMessage);
                     return false;
                 }
             },
@@ -318,6 +337,8 @@ const Game = function({renderOn, fieldSize, gridSize}){
 
                 dev_ui.init();
 
+                ui.init();
+
                 // binding a settings object to a global variable
                 SETTINGS = settings;
 
@@ -334,11 +355,22 @@ const Game = function({renderOn, fieldSize, gridSize}){
                 // update gravity impact at target figure
                 setInterval(self.gravitize.bind(self), 90 / SETTINGS.gravity);
 
+                // manual fugire spawn
                 dev_ui.devSettings.__spawnFigure.execute = (data) => {
                     this.field.figures = [];
                     this.player = null;
                     this.player = this.spawnFigure(data);
                 };
+                
+                // some panel theming
+                if(dev_ui.devSettings.__devMode.state === true) {
+                    let devPanel = document.querySelector('#dev-panel');
+                    let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
+
+                    manualSpawnButtons.forEach(spawnButton => { 
+                        spawnButton.style.background = SETTINGS.themes.night.figures[spawnButton.getAttribute('data-button-value')] 
+                    });
+                }
 
                 // Movement managment
                 controls.on('up', () => {
@@ -426,10 +458,25 @@ const Game = function({renderOn, fieldSize, gridSize}){
                         },
                     });
                 });
+                
+                controls.on('space', () => {
+                    // at space key fast move figure to down
+                    this.player.moveDownUntilCollide({
+                        // when it colliding with something
+                        onCollide: figure => {
+                            // start starndart procedure
+                            figure.freeze();
+                            this.setHighestLine(figure);
+                            this.checkLineCompletitions();
+
+                            this.player = this.spawnFigure();
+                        },
+                    });
+                });
             }
         }
 
     } else {
-        throw new Error("Game class param 'renderOn' has bad value");
+        throw new Error("Game class param 'screen' has bad value");
     }
 }

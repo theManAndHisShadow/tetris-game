@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Game Proto</title>
+        <title>Tetris - Solo game</title>
         <link rel="stylesheet" type="text/css" href="./resources/css/common.css">
         <link rel="stylesheet" type="text/css" href="./resources/css/game-screen.css">
         <link rel="stylesheet" type="text/css" href="./resources/css/dev-panel.css">
@@ -17,10 +17,9 @@
             </div>
 
             <div id="app" class="absolute-centred">
-                <canvas id="app__render-zone">
-                    
-                </canvas>
-                <button id="app__restart-button">Restart</button>
+                <div id="app__screen">
+
+                </div>
             </div>
         </div>
 
@@ -28,6 +27,7 @@
         <script src="./engine/render.js"></script>
         <script src="./engine/settings.js"></script>
         <script src="./engine/dev.js"></script>
+        <script src="./engine/ui.js"></script>
         <script src="./engine/controls.js"></script>
         <script src="./engine/figure.js"></script>
         <script src="./engine/game.js"></script>
