@@ -240,6 +240,8 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
             let otherFigures = targets;
             let otherblocks = [];
 
+            console.log(otherFigures, this.color);
+
             // gather all target blocks at one dimension array
             otherFigures.forEach(figure => {
                 otherblocks = otherblocks.concat(figure.blocks);
@@ -320,6 +322,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
 
             // checking when block of figure collides with other fiqure block
             if (this.checkCollisionWith(this.siblings, direction)) {
+                console.log(this);
                 collisionDetected = true;
                 collideWith = 'figure';
 
@@ -388,7 +391,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
          * Moves figure to down until it collides with other figure/field border
          * @param {Function} onCollide callback function that invokes when colliding detected
          */
-        moveDownUntilCollide: function({onCollide}){
+        moveDownUntilCollide: function({onCollide} = {}){
             // creating main variable
             let collideDetected = false;
 
@@ -564,5 +567,47 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 });
             }
         },
+    }
+};
+
+const FigureProjection = function(projectionOf){
+    return {
+        figure: {
+            // Here we completely mimic the player’s figure, 
+            //...so that the sync() and moveDownUntilCollide() method works correctly
+            projection: new Figure({
+                color: '#c0c0c04f',
+                shape: projectionOf.shape,
+                size: projectionOf.size,
+                renderer: projectionOf.renderer,
+                siblings: projectionOf.siblings,
+            }),
+        },
+
+        // reference to target figure
+        projectionOf: projectionOf,
+
+        /**
+         * Renders projection if figure
+         */
+        render: function(){
+            this.figure.projection.render();
+        },
+
+
+        /**
+         * Synchronizes part of the states of the target figure
+         */
+        syncPosition: function(){
+            this.figure.projection.cx = this.projectionOf.cx;
+            
+            this.figure.projection.blocks.forEach((singleBlock, i) => {
+                singleBlock.x = this.projectionOf.blocks[i].x;
+                singleBlock.y = this.projectionOf.blocks[i].y;
+            });
+
+            // console.log(this.projectionOf);
+            this.figure.projection.moveDownUntilCollide();
+        }
     }
 };
