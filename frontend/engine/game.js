@@ -81,6 +81,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
         return {
             screen: screen,
             player: null,
+            playerProjection: null,
 
             field: {
                 gridCellSize: gridCellSize,
@@ -90,29 +91,28 @@ const Game = function({screen, fieldSize, gridCellSize}){
             },
 
             ui: ui,
-            
-            /**
+
+             /**
              * Create figure object and adds to game field
              * @param {number} cx figure center x coordinate
              * @param {number} cy figure center y coordinate
              * @param {number} shape type of figure
              * @param {string} color color of figure
+             * @return {object}
              */
-            addFigureToField: function({cx, cy, shape, color} = {}){
+            createFigure: function({id, cx, cy, shape, color} = {}){
+                id = id || null;
                 color = color || 'black';
                 shape = shape || 0;
 
-                const size = 25;
                 const figure = new Figure({
-                    // update Game stored figure ID
-                    id: __generateID(),
-
                     siblings: this.field.figures.filter(figure => {
                         if(figure.id !== this.id) {
                             return figure;
                         }
                     }),
                     
+                    id: id,
                     cx: cx, 
                     cy: cy,
                     color: color, 
@@ -121,10 +121,13 @@ const Game = function({screen, fieldSize, gridCellSize}){
                     renderer: renderer,
                 });
 
-                console.log('Added new figure: ', figure);
-                this.field.figures.push(figure);
-
                 return figure;
+            },
+
+            createProjectionFor: function(figure){
+                const projection = new FigureProjection(figure);
+
+                return projection;
             },
 
             checkLineCompletitions: function () {
@@ -231,6 +234,8 @@ const Game = function({screen, fieldSize, gridCellSize}){
                     __drawFieldGrid(gridCellSize);
                 }
 
+                this.playerProjection.render();
+
                 // re-render
                 this.field.figures.forEach(fieldItem => {
                     fieldItem.render();     
@@ -301,15 +306,26 @@ const Game = function({screen, fieldSize, gridCellSize}){
                 if(this.field.highestLine > this.field.size[1] -2) startPointIsFull = true;
 
                 if(startPointIsFull === false){
-                    let figure = this.addFigureToField({
+                    let figure = this.createFigure({
+                        // update Game stored figure ID
+                        id: __generateID(),
                         color: SETTINGS.themes.night.figures[shape],
 
                         // generate each time random figure
                         shape: shape,
                     });
+                    this.field.figures.push(figure);
+                    console.log('Added new figure: ', figure);
 
                     figure.isFalling = true;
                     figure.isFreezed = false;
+
+                    // creating 'shadow' fugire that copies some player figure values (x pos, angle)
+                    let newFigureProjection = this.createProjectionFor(figure);
+                    this.playerProjection = newFigureProjection;
+
+                    // update projection position 
+                    this.playerProjection.syncPosition();
 
                     return figure;
                 } else {
@@ -386,6 +402,9 @@ const Game = function({screen, fieldSize, gridCellSize}){
                             console.log('Full rotations: ' + figure.rotations)
                         }
                     });
+
+                    // Rotating figure by pressing w/UpArrow
+                    this.playerProjection.syncPosition();
                 });
 
                 controls.on('left', () => {
@@ -407,6 +426,9 @@ const Game = function({screen, fieldSize, gridCellSize}){
                             }
                         } 
                     });
+
+                    // update projection position 
+                    this.playerProjection.syncPosition();
                 });
 
                 controls.on('right', () => {
@@ -429,6 +451,9 @@ const Game = function({screen, fieldSize, gridCellSize}){
                             }
                         },
                     });
+
+                    // update projection position 
+                    this.playerProjection.syncPosition();
                 });
 
                 controls.on('down', () => {
