@@ -414,6 +414,8 @@ const Game = function({screen, fieldSize, gridCellSize}){
                     this.player.move({
                         direction: direction,
                         onCollide: (figure, collideWith) => {
+                            figure.trembleOnCollide(direction);
+
                             if(collideWith == 'fieldBorder') {
                                 console.log('Figure collide with '+ direction +' border of game field');
                             }
@@ -438,6 +440,9 @@ const Game = function({screen, fieldSize, gridCellSize}){
                     this.player.move({
                         direction: direction,
                         onCollide: (figure, collideWith) => {
+                            this.playerProjection.syncPosition();
+                            figure.trembleOnCollide(direction);
+
                             if(collideWith == 'fieldBorder') {
                                 console.log('Figure collide with '+ direction +' border of game field');
                             }
@@ -486,17 +491,19 @@ const Game = function({screen, fieldSize, gridCellSize}){
                 
                 controls.on('space', () => {
                     // at space key fast move figure to down
-                    this.player.moveDownUntilCollide({
-                        // when it colliding with something
-                        onCollide: figure => {
-                            // start starndart procedure
-                            figure.freeze();
-                            this.setHighestLine(figure);
-                            this.checkLineCompletitions();
-
-                            this.player = this.spawnFigure();
-                        },
-                    });
+                    if(this.player.isFreezed == false){
+                        this.player.moveDownUntilCollide({
+                            // when it colliding with something
+                            onCollide: figure => {
+                                // start starndart procedure
+                                figure.freeze();
+                                this.setHighestLine(figure);
+                                this.checkLineCompletitions();
+    
+                                this.player = this.spawnFigure();
+                            },
+                        });
+                    }
                 });
             }
         }

@@ -178,7 +178,13 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         // default spawn point of figure
         spawnPoint: __setSpawnPoint(shape, size),
 
+        // this prop is true when figure already touches the ground
         isFreezed: false,
+
+        // this property is true when a figure trembles if it is pushed against a wall
+        isTrembling: false,
+
+        // this property is true when figure spawned and falling down
         isFalling: true,
 
         siblings: siblings,
@@ -289,11 +295,11 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                     collideWith = 'fieldBorder';
 
                 // check if block collide with right side of field border
-                } else if (direction === 'right' && singleBlock.x - this.size == (this.renderer.context.canvas.width - this.size * 2)) {
+                } else if (direction === 'right' && singleBlock.x == (this.renderer.context.canvas.width - this.size)) {
                     collisionBuffer.push('touching');
                     collideWith = 'fieldBorder';
                  // check if block collide with bottom side of field border
-                } else if (direction === 'right' && singleBlock.x > (this.renderer.context.canvas.width - this.size * 2)) {
+                } else if (direction === 'right' && singleBlock.x > (this.renderer.context.canvas.width - this.size)) {
                     collisionBuffer.push('overlapping');
                     collideWith = 'fieldBorder';
 
@@ -353,14 +359,12 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 // Collision checking
                 let { collisionDetected, collisionType, collideWith } = this.checkCollision(direction);
 
-                // console.log(collisionDetected, collisionType, collideWith)
-                // console.log(this.id);
 
                 // Handle collisions (with fieldBorder or figure)
                 if (collisionDetected) {
                     delta = 0;
                     onCollideCB(this, collideWith);
-                }
+                } 
 
                 // Moving figure blocks coords
                 this.blocks.forEach(singleBlock => {
@@ -541,6 +545,46 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         },
 
         /**
+         * Causes a figure to shake when it touches the edge of the playing field
+         * @param {string} direction 
+         */
+        trembleOnCollide: function(direction){
+            // In case the previous animation is not yet finished, 
+            // ...we ignore the execution of the code below. 
+            if(!this.isTrembling){
+                let collision = this.checkCollision(direction);
+                let overlapping = collision.collisionType == 'overlapping';
+                let counterDirection;
+                if(direction == 'left') counterDirection = 'right';
+                if(direction == 'right') counterDirection = 'left';
+                // amount of tremble
+                let delta = 5;
+
+                // I'm concerned that on other computers, 
+                // ...due to differences in processor speeds and the speed of information transmission 
+                //...between pressing and processing, the code using this delay may not work.
+                let delay = 75;
+                
+                // only when figure not overlapping with game field
+                if(!overlapping) {
+                    this.isFreezed = false;
+                    this.isTrembling = true;
+                    this.move({direction: counterDirection, speed: delta});
+        
+                    setTimeout(() => {
+                        this.isFreezed = false;
+                        this.isTrembling = false;
+    
+                        this.move({
+                            direction: direction, 
+                            speed: delta,
+                        });
+                    }, delay);
+                } 
+            }
+        },
+
+        /**
          * Renders single figure
          */
         render: function(){
@@ -596,15 +640,17 @@ const FigureProjection = function(projectionOf){
          * Synchronizes part of the states of the target figure
          */
         syncPosition: function(){
-            this.figure.projection.cx = this.projectionOf.cx;
+            if(this.projectionOf.isTrembling == false){
+                this.figure.projection.cx = this.projectionOf.cx;
             
-            this.figure.projection.blocks.forEach((singleBlock, i) => {
-                singleBlock.x = this.projectionOf.blocks[i].x;
-                singleBlock.y = this.projectionOf.blocks[i].y;
-            });
+                this.figure.projection.blocks.forEach((singleBlock, i) => {
+                    singleBlock.x = this.projectionOf.blocks[i].x;
+                    singleBlock.y = this.projectionOf.blocks[i].y;
+                });
 
-            // console.log(this.projectionOf);
-            this.figure.projection.moveDownUntilCollide();
+                // console.log(this.projectionOf);
+                this.figure.projection.moveDownUntilCollide();
+            }
         }
     }
 };
