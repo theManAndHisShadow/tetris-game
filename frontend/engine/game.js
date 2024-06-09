@@ -205,6 +205,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
                         
                         // 10 point per deleted block
                         this.ui.scores.add(this.field.size[0] * 10);
+                        this.ui.lines.update();
 
                         // additional checking after line is deleted
                         this.checkLineCompletitions();
@@ -388,7 +389,8 @@ const Game = function({screen, fieldSize, gridCellSize}){
                                 figure.freeze();
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
-    
+                                this.ui.figures.update();
+
                                 this.player = this.spawnFigure();
                             }
 
@@ -397,6 +399,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
 
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
+                                this.ui.figures.update();
 
                                 this.player = this.spawnFigure();
                             }
@@ -596,6 +599,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
                                 figure.freeze();
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
+                                this.ui.figures.update();
     
                                 this.player = this.spawnFigure();
                             }
@@ -605,6 +609,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
                                 figure.freeze();
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
+                                this.ui.figures.update();
 
                                 this.player = this.spawnFigure();
                             }
@@ -622,6 +627,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
                                 figure.freeze();
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
+                                this.ui.figures.update();
     
                                 this.player = this.spawnFigure();
                             },

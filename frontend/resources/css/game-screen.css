@@ -47,7 +47,19 @@
     right: 32px;
 }
 
-#ui__stopwatch {
+
+#ui__figures-placed {
     top: 46px;
+    right: 32px;
+}
+
+
+#ui__lines-completed {
+    top: 59px;
+    right: 32px;
+}
+
+#ui__stopwatch {
+    top: 72px;
     right: 32px;
 }

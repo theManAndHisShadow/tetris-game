@@ -6,11 +6,11 @@ const UI = function({parentScreen} = {}){
         scores: {
             html: null,
             value: 0,
+            label: 'Scores: ',
 
             add: function(value){
                 this.value = this.value + value;
-                this.html.innerText = 'Scores: ' + this.value;
-
+                this.html.innerText = this.label + this.value;
             },
 
             renderAt: function(renderAt){
@@ -18,10 +18,56 @@ const UI = function({parentScreen} = {}){
                 scoresDisplay.id = "ui__scores-display";
                 scoresDisplay.classList.add('ui-element');
     
-                scoresDisplay.innerText = 'Scores: ' + this.value;
+                scoresDisplay.innerText = this.label + this.value;
     
                 this.html = scoresDisplay;
                 renderAt.appendChild(scoresDisplay);
+            },
+        },
+
+        figures: {
+            html: null,
+            value: 0,
+            label: 'Figures: ',
+
+            update: function(){
+                this.value += 1;
+
+                this.html.innerText = this.label + this.value;
+            },
+
+            renderAt: function(renderAt){
+                let figures = document.createElement('div');
+                figures.id = "ui__figures-placed";
+                figures.classList.add('ui-element');
+    
+                figures.innerText = this.label + this.value;
+    
+                this.html = figures;
+                renderAt.appendChild(figures);
+            },
+        },
+
+        lines: {
+            html: null,
+            value: 0,
+            label: 'Lines: ',
+
+            update: function(){
+                this.value += 1;
+
+                this.html.innerText = this.label + this.value;
+            },
+
+            renderAt: function(renderAt){
+                let lines = document.createElement('div');
+                lines.id = "ui__lines-completed";
+                lines.classList.add('ui-element');
+    
+                lines.innerText = this.label + this.value;
+    
+                this.html = lines;
+                renderAt.appendChild(lines);
             },
         },
 
@@ -29,6 +75,7 @@ const UI = function({parentScreen} = {}){
             html: null,
             fps: null,
             value: 0,
+            label: 'Time: ',
             minutes: 0,
             seconds: 0,
             milliseconds: 0,
@@ -56,8 +103,6 @@ const UI = function({parentScreen} = {}){
                         this.seconds = 0;
                     }
                 }
-
-                console.log(this.seconds, this.seconds % 60);
             },
 
 
@@ -73,7 +118,7 @@ const UI = function({parentScreen} = {}){
                 let secondsFormat = addLeadingZero(this.seconds, 9);
 
                 // rerender
-                this.html.innerText = 'Time: '+ minutesFormat + ':' + secondsFormat + "." + this.milliseconds; 
+                this.html.innerText = this.label + minutesFormat + ':' + secondsFormat + "." + this.milliseconds; 
             },
 
             renderAt: function(renderAt){
@@ -81,7 +126,7 @@ const UI = function({parentScreen} = {}){
                 stopwatchElement.id = "ui__stopwatch";
                 stopwatchElement.classList.add('ui-element');
     
-                stopwatchElement.innerText = 'Time: ' + this.value;
+                stopwatchElement.innerText = this.label + this.value;
     
                 this.html = stopwatchElement;
                 renderAt.appendChild(stopwatchElement);
@@ -92,6 +137,8 @@ const UI = function({parentScreen} = {}){
 
         render: function(){
             this.scores.renderAt(this.parentScreen);
+            this.figures.renderAt(this.parentScreen);
+            this.lines.renderAt(this.parentScreen);
             this.stopwatch.renderAt(this.parentScreen);
         },
 
