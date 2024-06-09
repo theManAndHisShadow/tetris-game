@@ -103,6 +103,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
             },
 
             ui: ui,
+            gameover: false,
 
              /**
              * Create figure object and adds to game field
@@ -354,7 +355,9 @@ const Game = function({screen, fieldSize, gridCellSize}){
                 });
 
                 // updating stopwatch values
-                ui.stopwatch.update();
+                if(this.gameover == false) {
+                    ui.stopwatch.update();
+                }
 
 
                 if(settings.dev.__renderHighestLine.state === true) {
@@ -454,6 +457,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
                 } else {
                     // TODO: add some visual
                     let endMessage = 'Game over! Your score: ' + this.ui.scores.value;
+                    this.gameover = true;
 
                     console.log(endMessage);
                     alert(endMessage);
