@@ -79,7 +79,8 @@ const Game = function({screen, fieldSize, gridCellSize}){
 
         const controls = new Controls({target: screen});
 
-        const fps = (1000 / 25);
+        const fps = 25;
+        const fpsInterval = (1000 / fps);
 
         return {
             screen: screen,
@@ -351,6 +352,9 @@ const Game = function({screen, fieldSize, gridCellSize}){
                     fieldItem.render();     
                 });
 
+                // updating stopwatch values
+                ui.stopwatch.update();
+
 
                 if(settings.dev.__renderHighestLine.state === true) {
                     // Calculating highest line hight pixels
@@ -469,7 +473,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
 
                 dev_ui.init();
 
-                ui.init();
+                ui.init(fpsInterval);
 
                 // binding a settings object to a global variable
                 SETTINGS = settings;
@@ -485,7 +489,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
                 this.player = player;
 
                 // render all game figures include movements
-                setInterval(self.render.bind(self), fps);
+                setInterval(self.render.bind(self), fpsInterval);
 
                 // update gravity impact at target figure
                 setInterval(self.gravitize.bind(self), 90 / SETTINGS.gravity);
