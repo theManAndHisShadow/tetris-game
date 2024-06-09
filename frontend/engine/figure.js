@@ -33,7 +33,7 @@ const Block = function({id, x, y, color, size, lineGroup, parentFigureID} = {}){
  * @param {CanvasRenderingContext2D} renderer 
  * @returns {object}
  */
-const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {}){
+const Figure = function({id, parent, siblings, cx, cy, color, size, shape, renderer} = {}){
     /**
      * Internal helper function to get matrix of some blockicular shape.
      * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
@@ -152,7 +152,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
      */
     function __setSpawnPoint(shape, size){
         // horizontal center
-        let spawPointX = ((renderer.context.canvas.width / size) / 2) * size;
+        let spawPointX = ((parent.width / size) / 2) * size;
 
         // verical pos
         let spawPointY = __getShapeMatrix(shape).center[1] * size * 2;
@@ -187,6 +187,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
         // this property is true when figure spawned and falling down
         isFalling: true,
 
+        parent: parent,
         siblings: siblings,
 
         size: size,
@@ -295,17 +296,17 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                     collideWith = 'fieldBorder';
 
                 // check if block collide with right side of field border
-                } else if (direction === 'right' && singleBlock.x == (this.renderer.context.canvas.width - this.size)) {
+                } else if (direction === 'right' && singleBlock.x == (this.parent.width - this.size)) {
                     collisionBuffer.push('touching');
                     collideWith = 'fieldBorder';
                  // check if block collide with bottom side of field border
-                } else if (direction === 'right' && singleBlock.x > (this.renderer.context.canvas.width - this.size)) {
+                } else if (direction === 'right' && singleBlock.x > (this.parent.width - this.size)) {
                     collisionBuffer.push('overlapping');
                     collideWith = 'fieldBorder';
 
                  // check if block collide with bottom side of field border
                 } else if (direction === 'down') {
-                    if (singleBlock.y > (this.renderer.context.canvas.height - this.size*2)) {
+                    if (singleBlock.y > (this.parent.height - this.size*2)) {
                         collisionBuffer.push('touching');
                         collideWith = 'fieldBorder';
                     }
@@ -448,7 +449,7 @@ const Figure = function({id, siblings, cx, cy, color, size, shape, renderer} = {
                 // inside loop checking collisions for single block
                 for (const block of newblocks) {
                     // if block getting over game field
-                    if (block.x < 0 || block.x >= this.renderer.context.canvas.width || block.y >= this.renderer.context.canvas.height) {
+                    if (block.x < 0 || block.x >= this.parent.width || block.y >= this.parent.height) {
 
                         // set collision true
                         collisionWithBorder = true;
@@ -621,6 +622,7 @@ const FigureProjection = function(projectionOf){
                 shape: projectionOf.shape,
                 size: projectionOf.size,
                 renderer: projectionOf.renderer,
+                parent: projectionOf.parent,
                 siblings: projectionOf.siblings,
             }),
         },

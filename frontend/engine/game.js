@@ -14,12 +14,17 @@ const Game = function({screen, fieldSize, gridCellSize}){
 
     if(screen){
         // creating game canvas
+        let nextFiguresWidth = 85;
+        let nextFiguresHeight = 185;
+        let fieldWidth = fieldSize[0] * gridCellSize;
+        let fieldHeight = fieldSize[1] * gridCellSize;
+
         let canvas = document.createElement('canvas');
         screen.appendChild(canvas);
 
         // setting canvas based on fieldSize and gridCellSize (in pixels)
-        canvas.width = fieldSize[0] * gridCellSize;
-        canvas.height = fieldSize[1] * gridCellSize;
+        canvas.width = fieldWidth + nextFiguresWidth;
+        canvas.height = fieldHeight;
 
         // start point counting figure IDs
         let basicID = 0;
@@ -47,25 +52,23 @@ const Game = function({screen, fieldSize, gridCellSize}){
          * @param {number} gridCellSize size of grid cell
          * @param {string} linesColor color of grid line
          */
-        function __drawFieldGrid(gridCellSize, linesColor){
+        function __drawFieldGrid(field, linesColor){
             linesColor = linesColor || SETTINGS.themes.night.gridColor;
             
-            const height = renderer.context.canvas.height;
-            const width = renderer.context.canvas.width;
-            const horizontal_amount = width / gridCellSize;
-            const verical_amount = height / gridCellSize;
+            const horizontal_amount = field.width / field.gridCellSize;
+            const verical_amount = field.height / field.gridCellSize;
 
             for(let h = 0; h <= horizontal_amount; h++){
                 for(let v = 0; v <= verical_amount; v++){
                     renderer.drawLine({
                         x1: gridCellSize * h, y1: 0,
-                        x2: gridCellSize * h, y2: height,
+                        x2: gridCellSize * h, y2: field.height,
                         c: linesColor, w: 2,
                     });
 
                     renderer.drawLine({
                         x1: 0, y1: gridCellSize * v,
-                        x2: width, y2: gridCellSize * v,
+                        x2: field.width, y2: gridCellSize * v,
                         c: linesColor, w: 1,
                     });
                 }
@@ -86,8 +89,16 @@ const Game = function({screen, fieldSize, gridCellSize}){
             field: {
                 gridCellSize: gridCellSize,
                 size: fieldSize,
+                width: fieldWidth,
+                height: fieldHeight,
                 figures: [],
                 highestLine: 0,
+            },
+
+            nextFigures: {
+                queue: [],
+                width: nextFiguresWidth,
+                height: nextFiguresHeight,
             },
 
             ui: ui,
@@ -100,12 +111,14 @@ const Game = function({screen, fieldSize, gridCellSize}){
              * @param {string} color color of figure
              * @return {object}
              */
-            createFigure: function({id, cx, cy, shape, color} = {}){
+            createFigure: function({id, cx, cy, shape, color, parent, size} = {}){
                 id = id || null;
                 color = color || 'black';
                 shape = shape || 0;
+                size = size || this.field.gridCellSize;
 
                 const figure = new Figure({
+                    parent: parent,
                     siblings: this.field.figures.filter(figure => {
                         if(figure.id !== this.id) {
                             return figure;
@@ -116,7 +129,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
                     cx: cx, 
                     cy: cy,
                     color: color, 
-                    size: gridCellSize,
+                    size: size,
                     shape: shape, 
                     renderer: renderer,
                 });
@@ -204,7 +217,93 @@ const Game = function({screen, fieldSize, gridCellSize}){
 
                 console.log('Hightest line: ' + this.field.highestLine);
             },
+
+
+            /**
+             * Returns random shape letter
+             * @returns {string}
+             */
+            getRandomShape: function() {
+                const shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
+                const randomPos = getRandomNumber(0, shapesLetters.length - 1); // Generate a random index to select a shape from shapesLetters array
+
+                return shapesLetters[randomPos];
+            },
+
+
+
+            /**
+             * Return array of generated figures
+             * @param {number} length length of shapes quque
+             * @param {Array} shapeLettersQueue Optional param. If empty when generates new random queue
+             * @returns {Array}
+             */
+            generateShapeQueue: function(length, shapeLettersQueue) {
+                let queue = [];
+                let miniDisplaySectionSize =  this.nextFigures.height / length;
+
+                for (let i = 0; i < length; i++) {
+                    // If empty when generates new random queue
+                    const shape = (shapeLettersQueue && shapeLettersQueue[i]) ? shapeLettersQueue[i] : this.getRandomShape();
+
+                    const nextFigure = this.createFigure({
+                        cx: this.field.width + (this.nextFigures.width / 2),
+                        // use equal portions of minidisplay
+                        cy: (miniDisplaySectionSize * i + 1) + (miniDisplaySectionSize / 2),
+                        color: SETTINGS.themes.night.figures[shape],
+                        parent: this.field,
+                        size: 10,
+    
+                        // generate each time figure from queue
+                        shape: shape,
+                    });
+
+                    queue.push(nextFigure);
+                }
+
+                return queue;
+            },
             
+
+            
+            /**
+             * Generates new random queue of figures, sets 'this.nextFigures.queue'
+             * @param {number} length length of queue
+             */
+            generateQueue: function(length){
+                // set queue values from shapes array
+                this.nextFigures.queue = this.generateShapeQueue(length);
+            },
+
+
+
+            /**
+             * Re-generate quueue, resets 'this.nextFigures.queue'
+             */
+            regenerateQueue: function(){
+                let shapeLettersQueue = [...this.nextFigures.queue].map(figure => {
+                    return figure.shape;
+                });
+
+                shapeLettersQueue.push(this.getRandomShape());
+
+                // set queue values from shapes array
+                this.nextFigures.queue = this.generateShapeQueue(shapeLettersQueue.length, shapeLettersQueue);
+            },
+
+
+
+            /**
+             * Render all items of next figures queue
+             */
+            renderQueue: function(){
+                this.nextFigures.queue.forEach(nextFigure => {
+                    nextFigure.render();
+                });
+            },
+            
+
+
             /**
              * Renders all filed figures 
              */
@@ -231,8 +330,19 @@ const Game = function({screen, fieldSize, gridCellSize}){
                 })
 
                 if(settings.dev.__drawFieldGrid.state === true) {
-                    __drawFieldGrid(gridCellSize);
+                    __drawFieldGrid(this.field);
                 }
+
+                // nextFigures
+                renderer.drawRect({
+                    x: this.field.width + 1,
+                    y: 0,
+                    w: this.nextFigures.width,
+                    h: this.nextFigures.height,
+                    c: '#1c202f',
+                });
+
+                this.renderQueue();
 
                 this.playerProjection.render();
 
@@ -298,8 +408,12 @@ const Game = function({screen, fieldSize, gridCellSize}){
              */
             spawnFigure: function(shape){
                 let startPointIsFull = false;
-                let shapesLetters = ['i', 'j', 'l', 'o', 't', 's', 'z'];
-                shape = shape || shapesLetters[getRandomNumber(0, 6)];
+                // get shape from arg or get first item of next figures queue
+                shape = shape || this.nextFigures.queue.shift().shape;
+
+                // after grabbing first item of queue we need to re-generate queue
+                this.regenerateQueue();
+
 
                 // Now the end of the game is considered from the moment the counter reaches the highest point, 
                 // ...that is, the height of the field (in blocks) minus 2 blocks
@@ -310,10 +424,12 @@ const Game = function({screen, fieldSize, gridCellSize}){
                         // update Game stored figure ID
                         id: __generateID(),
                         color: SETTINGS.themes.night.figures[shape],
+                        parent: this.field,
 
                         // generate each time random figure
                         shape: shape,
                     });
+
                     this.field.figures.push(figure);
                     console.log('Added new figure: ', figure);
 
@@ -360,6 +476,9 @@ const Game = function({screen, fieldSize, gridCellSize}){
 
                 // init controls module
                 controls.init();
+
+                // generating initial queue of random figures
+                this.generateQueue(3);
 
                 // create and add player figure
                 let player = this.spawnFigure();
