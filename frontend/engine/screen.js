@@ -20,7 +20,10 @@ const GameScreen = function({html, canvas}){
 
             const css = getComputedStyle(this.canvas);
             const originValue = Number(css[cssSide].replace('px', ''));
-            const delta = 2;
+
+            // some random at down direction
+            const delta = direction == 'down' ? getRandomNumber(2, 6) : 3;
+
             const delay = 35;
 
             this.canvas.style[cssSide] = delta + 'px';
