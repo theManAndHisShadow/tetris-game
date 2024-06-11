@@ -43,22 +43,22 @@
 
 #ui__scores-display {
     top: 32px;
-    right: 32px;
+    right: 18px;
 }
 
 
 #ui__figures-placed {
     top: 46px;
-    right: 32px;
+    right: 18px;
 }
 
 
 #ui__lines-completed {
     top: 59px;
-    right: 32px;
+    right: 18px;
 }
 
 #ui__stopwatch {
     top: 72px;
-    right: 32px;
+    right: 18px;
 }
