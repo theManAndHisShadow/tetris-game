@@ -3,17 +3,47 @@ console.log('[Log]: Starting settings.js');
 const Settings = function () {
 
     return {
-        settingsUI: {
-            background: {
-                colors: [['gray', '#858585'], ['blue', '#3b9fd1'], ['red', '#c35353'], ['purple', '#7e4585'], 
-                ['black', '#202324']],
+        modal: {
+            // change background color on website
+            changeBackground: {
+                label: 'Background',
+                prevButton: '<',
+                nextButton: '>',
+                type: 'stepper'
+            },
+
+            // turn on or off sound in game
+            sound: {
+                state: true,
+                label: 'Sound',
+                type: 'toggle'
+            },
+
+            // change background music
+            changeMusic: {
+                label: 'Music',
+                prevButton: '<',
+                nextButton: '>',
+                type: 'stepper'
             },
         }, 
 
+        // background colors
+        colors: {
+            gray: '#858585',
+            blue: '#3b9fd1',
+            red: '#c35353',
+            purple: '#7e4585',
+            black: '#202324',
+        },
+
+        // speed of figure moving to bottom
+        gravity: 0.1,
+
         renderUISettings: function(){
             
-            const dom = new CreateSettingsModal(this.settingsUI);
-            dom.init();
+            const modal = new CreateSettingsModal(this.modal, this.colors);
+            modal.init();
 
         },
         // Storing some props for dev & debugging purposes
@@ -41,9 +71,6 @@ const Settings = function () {
                 label: 'Render free space rect',
             },
         },
-
-        // speed of figure moving to bottom
-        gravity: 0.1,
 
         init: function () {
             console.log('[Log]: initializing Settings');

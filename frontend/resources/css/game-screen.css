@@ -45,14 +45,14 @@
     left: 50%;
     transform: translate(-50%, -50%);
     width: 200px;
-    height: 150px;
+    height: 350px;
     border: 1px solid rgb(0 0 0 / 43%);
     border-radius: 5px;
     flex-direction: column;
 }
 
 #settings-modal::backdrop {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.5);
 }
 
 #settings-modal__header {
@@ -72,7 +72,7 @@
     margin-right: 10px;
 }
 
-#settings-modal__background-colors {
+#settings-modal__setting {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -80,19 +80,19 @@
     justify-content: space-between;
 }
 
-#settings-modal__background-title {
+#settings-modal__subtitle {
     padding: 5px;
     box-sizing: border-box;
     align-self: flex-start;
 }
 
-#background-colors__inputs {
+#settings-modal__inputs {
     width: 70%;
     display: flex;
     justify-content: space-between;
 }
 
-.change-color-button {
+.change-setting-input {
     width: 15px;
     font-size: 18px;
     border: none;
