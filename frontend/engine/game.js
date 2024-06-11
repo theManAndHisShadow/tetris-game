@@ -8,11 +8,11 @@ console.log('[Log]: Starting game.js');
 let SETTINGS = null;
 
 
-const Game = function({screen, fieldSize, gridCellSize}){    
+const Game = function({screenElement, fieldSize, gridCellSize}){    
     gridCellSize = gridCellSize || 20;
     fieldSize = fieldSize || [10, 16];
 
-    if(screen){
+    if(screenElement){
         // creating game canvas
         let nextFiguresWidth = 85;
         let nextFiguresHeight = 185;
@@ -20,7 +20,12 @@ const Game = function({screen, fieldSize, gridCellSize}){
         let fieldHeight = fieldSize[1] * gridCellSize;
 
         let canvas = document.createElement('canvas');
-        screen.appendChild(canvas);
+        screenElement.appendChild(canvas);
+
+        const screen = new GameScreen({
+            html: screenElement, 
+            canvas: canvas,
+        });
 
         // setting canvas based on fieldSize and gridCellSize (in pixels)
         canvas.width = fieldWidth + nextFiguresWidth;
@@ -30,12 +35,12 @@ const Game = function({screen, fieldSize, gridCellSize}){
         let basicID = 0;
 
         const renderer = new Renderer({
-            context: canvas.getContext("2d"),
+            context: screen.canvas.getContext("2d"),
         });
 
         const settings = new Settings();
 
-        const ui = new UI({parentScreen: screen});
+        const ui = new UI({parentScreen: screenElement});
 
         /**
          * Internal helper function to generate new ID
@@ -545,6 +550,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
                         direction: direction,
                         onCollide: (figure, collideWith) => {
                             figure.trembleOnCollide(direction);
+                            this.screen.tremble('right');
 
                             if(collideWith == 'fieldBorder') {
                                 console.log('Figure collide with '+ direction +' border of game field');
@@ -572,6 +578,7 @@ const Game = function({screen, fieldSize, gridCellSize}){
                         onCollide: (figure, collideWith) => {
                             this.playerProjection.syncPosition();
                             figure.trembleOnCollide(direction);
+                            this.screen.tremble('left');
 
                             if(collideWith == 'fieldBorder') {
                                 console.log('Figure collide with '+ direction +' border of game field');
@@ -632,6 +639,8 @@ const Game = function({screen, fieldSize, gridCellSize}){
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
                                 this.ui.figures.update();
+
+                                this.screen.tremble('down');
     
                                 this.player = this.spawnFigure();
                             },

@@ -26,6 +26,7 @@
 }
 
 #app__screen canvas {
+    position: relative;
     display: block;
     margin: 0 auto;
 }
