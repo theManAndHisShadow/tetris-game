@@ -34,3 +34,14 @@ function rotatePoint(cx, cy, x, y, angle) {
 
   return {x: nx, y: ny};
 }
+
+/**
+ * Adding leading zero to time values
+ * @param {number} time 
+ * @returns 
+ */
+function addLeadingZero(time){
+  let corrected = time == 0 ? '00' : time > 9 ? time : '0' + time;
+
+  return corrected;
+}
