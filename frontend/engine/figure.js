@@ -559,7 +559,7 @@ const Figure = function({id, parent, siblings, cx, cy, color, size, shape, rende
                 if(direction == 'left') counterDirection = 'right';
                 if(direction == 'right') counterDirection = 'left';
                 // amount of tremble
-                let delta = 5;
+                let delta = 2;
 
                 // I'm concerned that on other computers, 
                 // ...due to differences in processor speeds and the speed of information transmission 
