@@ -16,9 +16,10 @@ const CreateSettingsModal = function(modalSettings, backgroundColors) {
             buttonOpenModal: document.getElementById('settings-button'),
             rootBackground: document.querySelector('#root')
         },
-
         
-        defaultSettings: new TemplateSettingObj('red', true, 0),
+        defaultSettings: new TemplateSettingObj('gray', true, 0),
+        currentSettings: new TemplateSettingObj(),
+
 
         createdDOM: {},
 
@@ -51,7 +52,10 @@ const CreateSettingsModal = function(modalSettings, backgroundColors) {
                 this.createdDOM.modalWindow.showModal();
 
                 const buttonClose = this.createdDOM.modalWindow.querySelector('#settings-modal__close');
-                buttonClose.onclick = () => this.createdDOM.modalWindow.close();
+                
+                buttonClose.addEventListener('click', () => {
+                    this.createdDOM.modalWindow.close();
+                })
             })
         },
 
@@ -74,7 +78,6 @@ const CreateSettingsModal = function(modalSettings, backgroundColors) {
 
                 if(modalSettings[setting].type === 'stepper') {
                     const prevInput = document.createElement('button');
-                    prevInput.id = 'settings-modal__' + modalSettings[setting].label + '_prev-input';
                     prevInput.classList.add('change-setting-input');
                     prevInput.setAttribute('data-type', modalSettings[setting].label);
                     prevInput.setAttribute('data-stepper', 'left');
@@ -85,7 +88,6 @@ const CreateSettingsModal = function(modalSettings, backgroundColors) {
                     this.createdDOM[modalSettings[setting].label] = currentValue;
                     
                     const nextInput = document.createElement('button');
-                    nextInput.id = 'settings-modal__' + modalSettings[setting].label + '_next-input';
                     nextInput.classList.add('change-setting-input');
                     nextInput.setAttribute('data-type', modalSettings[setting].label);
                     nextInput.setAttribute('data-stepper', 'right');
@@ -116,6 +118,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors) {
             const buttonSaveSettings = document.createElement('button');
             buttonSaveSettings.textContent = 'Save';
             buttonSaveSettings.id = 'settings-modal__save-button';
+            this.createdDOM.saveButton = buttonSaveSettings;
 
             this.createdDOM.modalWindow.append(buttonSaveSettings);
         },
@@ -144,15 +147,18 @@ const CreateSettingsModal = function(modalSettings, backgroundColors) {
         getValueSettings: function () {
             jsonSettings = JSON.parse(localStorage.getItem('settings'));
 
-            for (const [key, value] of Object.entries(this.createdDOM)) {
-                if(Object.hasOwn(jsonSettings, key)) {
-                    if(typeof this.defaultSettings[key] === 'boolean'){
-                        value.checked = this.defaultSettings[key];
-                    } else {
-                        value.textContent = this.defaultSettings[key];
+            for (const [key, value] of Object.entries(jsonSettings)) {
+                if(Object.hasOwn(this.createdDOM, key)){
+                    if(key === 'Sound'){
+                        this.createdDOM[key].checked = value;
+                    }
+
+                    if(key === 'Background'){
+                        this.createdDOM[key].textContent = this.defaultSettings.Background;
                     }
                 }
-            }
+                console.log(key, value)
+            }            
 
             this.setBackgroundColor();
         }, 
@@ -161,7 +167,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors) {
             jsonSettings = JSON.parse(localStorage.getItem('settings'));
             
             if(jsonSettings.Background){
-                this.elementsHtml.rootBackground.style.backgroundColor = backgroundColors[jsonSettings.Background];
+                this.elementsHtml.rootBackground.style.backgroundColor = jsonSettings.Background[1];
             }
 
             if(localValueColor){
@@ -173,13 +179,43 @@ const CreateSettingsModal = function(modalSettings, backgroundColors) {
 
         },
 
+        controlSound: function() {
+
+        },
+
         selectValueSetting: function(objects) {
+
+            function buttonInactive(index, firstButton, secondButton){
+                if(index === 0){
+                    firstButton.disabled = true;
+                } 
+                if(index > 0) {
+                    firstButton.disabled = false;
+                }
+
+                if(index === colors.length - 1){
+                    secondButton.disabled = true;
+                } 
+                if(index < colors.length - 1) {
+                    secondButton.disabled = false;
+                }
+            }
+
             let colorID = 0;
             let musicID = 0;
             const arrayData = Object.entries(objects);
-            this.createdDOM.modalWindow.addEventListener('click', function(event) {
+            this.createdDOM.modalWindow.addEventListener('click', event => {
+
                     if(event.target.getAttribute('data-type') === 'Background'){
                         
+                        if(colorID < 0){
+                            colorID = arrayData.length - 1;
+                        }
+
+                        if(colorID >= arrayData.length - 1){
+                            colorID = 0;
+                        }
+
                         if(event.target.getAttribute('data-stepper') === 'left'){
                             colorID--;
                             this.setBackgroundColor(arrayData[colorID][1]);
@@ -190,12 +226,35 @@ const CreateSettingsModal = function(modalSettings, backgroundColors) {
                             this.setBackgroundColor(arrayData[colorID][1]);
                         }
 
+                        this.createdDOM.Background.textContent = arrayData[colorID][0];
+
+                    }
+
+                    if(event.target.getAttribute('data-type') === 'Music'){
+                        
+                        if(event.target.getAttribute('data-stepper') === 'left'){
+                            musicID--;
+                        }
+
+                        if(event.target.getAttribute('data-stepper') === 'right'){
+                            musicID++;
+                        }
+
+                    }
+
+                    if(event.target === this.createdDOM.saveButton){
+                        this.saveValueSettings([arrayData[colorID][0], arrayData[colorID][1]], this.createdDOM.Sound.value, musicID);
+                        console.log(localStorage);
                     }
             })
         },
 
-        changeValueSetting: function() {
+        saveValueSettings: function(color, sound, music) {
+            // this.currentSettings.color = color;
             
+            this.currentSettings = new TemplateSettingObj(color, sound, music);
+
+            localStorage.setItem('settings', JSON.stringify(this.currentSettings));
         },
 
         init: function() {
