@@ -1,4 +1,4 @@
-#Project deployment
+# Project deployment
 
 In order to run the project, you must first install node.js. After that, run:
 ```console
