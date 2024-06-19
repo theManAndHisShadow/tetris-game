@@ -84,6 +84,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
         const controls = new Controls({target: screen});
 
+        const soundComposer = new SoundComposer();
+
         const fps = 25;
         const fpsInterval = (1000 / fps);
 
@@ -108,6 +110,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
             },
 
             ui: ui,
+            sounds: soundComposer,
             gameover: false,
 
              /**
@@ -493,6 +496,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 // init controls module
                 controls.init();
 
+                soundComposer.init();
+
                 // generating initial queue of random figures
                 this.generateQueue(3);
 
@@ -567,6 +572,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
                     // update projection position 
                     this.playerProjection.syncPosition();
+
+                    this.sounds.play('sfx', 'movement', -0.7);
                 });
 
                 controls.on('right', () => {
@@ -582,7 +589,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
                             if(collideWith == 'fieldBorder') {
                                 console.log('Figure collide with '+ direction +' border of game field');
-                            }
+                            } 
 
                             if(collideWith == 'figure') {
                                 figure.freeze();
@@ -596,6 +603,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
                     // update projection position 
                     this.playerProjection.syncPosition();
+
+                    this.sounds.play('sfx', 'movement', -0.7);
                 });
 
                 controls.on('down', () => {
@@ -641,6 +650,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                                 this.ui.figures.update();
 
                                 this.screen.tremble('down');
+                                this.sounds.play('sfx', 'drop');
     
                                 this.player = this.spawnFigure();
                             },
