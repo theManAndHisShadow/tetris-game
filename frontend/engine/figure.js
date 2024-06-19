@@ -564,7 +564,7 @@ const Figure = function({id, parent, siblings, cx, cy, color, size, shape, rende
                 // I'm concerned that on other computers, 
                 // ...due to differences in processor speeds and the speed of information transmission 
                 //...between pressing and processing, the code using this delay may not work.
-                let delay = 75;
+                let delay = 50; // at 75 ms figure may "push through" edge
                 
                 // only when figure not overlapping with game field
                 if(!overlapping) {
