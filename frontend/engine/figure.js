@@ -181,9 +181,6 @@ const Figure = function({id, parent, siblings, cx, cy, color, size, shape, rende
         // this prop is true when figure already touches the ground
         isFreezed: false,
 
-        // this property is true when a figure trembles if it is pushed against a wall
-        isTrembling: false,
-
         // this property is true when figure spawned and falling down
         isFalling: true,
 
@@ -348,10 +345,12 @@ const Figure = function({id, parent, siblings, cx, cy, color, size, shape, rende
         * @param {string} direction direction of movement
         * @param {number} speed speed of movement (by one step)
         * @param {Function} onCollide callback function for collision events
+        * @param {Function} onMove callback function for move events
         */
-        move: function({direction, speed, onCollide, force}) {
+        move: function({direction, speed, onCollide, onMove, force}) {
             // Callback function for collide event
             let onCollideCB = typeof onCollide == 'function' ? onCollide : function(){};
+            let onMoveCB = typeof onMove == 'function' ? onMove : function(){};
 
             // Checking that figure is not freezed
             if(force === true || this.isFreezed === false) {
@@ -360,11 +359,13 @@ const Figure = function({id, parent, siblings, cx, cy, color, size, shape, rende
                 // Collision checking
                 let { collisionDetected, collisionType, collideWith } = this.checkCollision(direction);
 
-
                 // Handle collisions (with fieldBorder or figure)
                 if (collisionDetected) {
                     delta = 0;
                     onCollideCB(this, collideWith);
+
+                    //
+                    return false;
                 } 
 
                 // Moving figure blocks coords
@@ -386,6 +387,8 @@ const Figure = function({id, parent, siblings, cx, cy, color, size, shape, rende
                 } else if (direction === 'down') {
                     this.cy += delta;
                 }
+
+                onMoveCB();
             }
         },
 
@@ -545,45 +548,7 @@ const Figure = function({id, parent, siblings, cx, cy, color, size, shape, rende
             // this.updateStyle('color', 'blue');
         },
 
-        /**
-         * Causes a figure to shake when it touches the edge of the playing field
-         * @param {string} direction 
-         */
-        trembleOnCollide: function(direction){
-            // In case the previous animation is not yet finished, 
-            // ...we ignore the execution of the code below. 
-            if(!this.isTrembling){
-                let collision = this.checkCollision(direction);
-                let overlapping = collision.collisionType == 'overlapping';
-                let counterDirection;
-                if(direction == 'left') counterDirection = 'right';
-                if(direction == 'right') counterDirection = 'left';
-                // amount of tremble
-                let delta = 2;
 
-                // I'm concerned that on other computers, 
-                // ...due to differences in processor speeds and the speed of information transmission 
-                //...between pressing and processing, the code using this delay may not work.
-                let delay = 50; // at 75 ms figure may "push through" edge
-                
-                // only when figure not overlapping with game field
-                if(!overlapping) {
-                    this.isFreezed = false;
-                    this.isTrembling = true;
-                    this.move({direction: counterDirection, speed: delta});
-        
-                    setTimeout(() => {
-                        this.isFreezed = false;
-                        this.isTrembling = false;
-    
-                        this.move({
-                            direction: direction, 
-                            speed: delta,
-                        });
-                    }, delay);
-                } 
-            }
-        },
 
         /**
          * Renders single figure
@@ -642,17 +607,15 @@ const FigureProjection = function(projectionOf){
          * Synchronizes part of the states of the target figure
          */
         syncPosition: function(){
-            if(this.projectionOf.isTrembling == false){
-                this.figure.projection.cx = this.projectionOf.cx;
-            
-                this.figure.projection.blocks.forEach((singleBlock, i) => {
-                    singleBlock.x = this.projectionOf.blocks[i].x;
-                    singleBlock.y = this.projectionOf.blocks[i].y;
-                });
+            this.figure.projection.cx = this.projectionOf.cx;
+        
+            this.figure.projection.blocks.forEach((singleBlock, i) => {
+                singleBlock.x = this.projectionOf.blocks[i].x;
+                singleBlock.y = this.projectionOf.blocks[i].y;
+            });
 
-                // console.log(this.projectionOf);
-                this.figure.projection.moveDownUntilCollide();
-            }
+            // console.log(this.projectionOf);
+            this.figure.projection.moveDownUntilCollide();
         }
     }
 };

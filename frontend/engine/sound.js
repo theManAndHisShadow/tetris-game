@@ -13,6 +13,7 @@ const SoundComposer = function(){
         sfx: {
             drop: null,
             movement: null,
+            denied: null,
         },
 
         // music data
@@ -70,6 +71,12 @@ const SoundComposer = function(){
                 type: 'sfx',
                 name: 'drop',
                 path: "/resources/sounds/sfx__drop.mp3",
+            });
+
+            this.loadFile({
+                type: 'sfx',
+                name: 'denied',
+                path: "/resources/sounds/sfx__denied.mp3",
             });
 
             let loadingQueueLength = Object.values(this.sfx).length;
