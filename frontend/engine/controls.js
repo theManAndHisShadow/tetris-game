@@ -64,6 +64,12 @@ const Controls = function(){
                             __execute('down', item);
                         });
                     }
+
+                    if(e.code == "Space") {
+                        this.handlerQueue.forEach(item => {
+                            __execute('space', item);
+                        });
+                    }
                 });
             }
         },
