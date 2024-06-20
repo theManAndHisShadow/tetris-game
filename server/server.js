@@ -13,6 +13,13 @@ app.get('/sounds/:file', (req, res) => {
     res.sendFile(filePath);
 });
 
+// setting routs for image loading from server
+app.get('/images/:file', (req, res) => {
+    const file = req.params.file;
+    const filePath = path.join(__dirname, '../frontend/resoursces/sounds/', file);
+    res.sendFile(filePath);
+});
+
 // starting server
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);

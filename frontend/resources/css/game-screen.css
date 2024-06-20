@@ -4,14 +4,10 @@
 }
 
 #root {
-<<<<<<< HEAD
-=======
-    background: #060606;
->>>>>>> basic_sound_system-13b
-    width: 100%;
-    height: 100%;
-    position: absolute;
     background-size: cover;
+    position: absolute;
+    height: 100%;
+    width: 100%;
 }
 
 #app {
@@ -38,7 +34,10 @@
     left: 10px;
 }
 
-<<<<<<< HEAD
+#settings {
+
+}
+
 #settings-button {
     width: 30px;
     position: absolute;
@@ -114,33 +113,4 @@
     left: 50%;
     margin-top: 15px;
     transform: translateX(-50%);
-=======
-.ui-element {
-    color: white;
-    position: absolute;
-    width: 120px;
-    font-family: monospace;
-}
-
-#ui__scores-display {
-    top: 32px;
-    right: 18px;
-}
-
-
-#ui__figures-placed {
-    top: 46px;
-    right: 18px;
-}
-
-
-#ui__lines-completed {
-    top: 59px;
-    right: 18px;
-}
-
-#ui__stopwatch {
-    top: 72px;
-    right: 18px;
->>>>>>> basic_sound_system-13b
 }

@@ -192,7 +192,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
                 }
                 if(jsonSettings.Background[2] === 'Image'){
                     this.elementsHtml.rootBackground.style.removeProperty('background-color');
-                    this.elementsHtml.rootBackground.style.backgroundImage = `url(../frontend/resources/images/${jsonSettings.Background[1]})`;
+                    this.elementsHtml.rootBackground.style.backgroundImage = `url(/resources/images/${jsonSettings.Background[1]})`;
                 }
             }
 
@@ -202,7 +202,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
             }
             if(type === 'image'){
                 this.elementsHtml.rootBackground.style.removeProperty('background-color');
-                this.elementsHtml.rootBackground.style.backgroundImage = `url(../frontend/resources/images/${localValue})`;
+                this.elementsHtml.rootBackground.style.backgroundImage = `url(resources/images/${localValue})`;
             }
         },
 
