@@ -196,11 +196,11 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
                 }
             }
 
-            if(type === 'color'){
+            if(type === 'Color'){
                 this.elementsHtml.rootBackground.style.removeProperty('background-image');
                 this.elementsHtml.rootBackground.style.backgroundColor = localValue;
             }
-            if(type === 'image'){
+            if(type === 'Image'){
                 this.elementsHtml.rootBackground.style.removeProperty('background-color');
                 this.elementsHtml.rootBackground.style.backgroundImage = `url(../frontend/resources/images/${localValue})`;
             }
@@ -278,13 +278,13 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
 
                         if(event.target.getAttribute('data-stepper') === 'left' && colorID > 0){
                             colorID--;
-                            this.setBackground('color', colorArray[colorID][1]);
+                            this.setBackground('Color', colorArray[colorID][1]);
                             this.changeStateButton(this.createdDOM.Color_left, this.createdDOM.Color_right, colorID, colorArray);
                         }
 
                         if(event.target.getAttribute('data-stepper') === 'right' && colorID < colorArray.length - 1){
                             colorID++;
-                            this.setBackground('color', colorArray[colorID][1]);
+                            this.setBackground('Color', colorArray[colorID][1]);
                             this.changeStateButton(this.createdDOM.Color_left, this.createdDOM.Color_right, colorID, colorArray);
                         }
 
@@ -296,13 +296,13 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
 
                         if(event.target.getAttribute('data-stepper') === 'left' && imageID > 0){
                             imageID--;
-                            this.setBackground('image', imageArray[imageID][1]);
+                            this.setBackground('Image', imageArray[imageID][1]);
                             this.changeStateButton(this.createdDOM.Image_left, this.createdDOM.Image_right, imageID, imageArray);
                         }
 
                         if(event.target.getAttribute('data-stepper') === 'right' && imageID < imageArray.length - 1){
                             imageID++;
-                            this.setBackground('image', imageArray[imageID][1]);
+                            this.setBackground('Image', imageArray[imageID][1]);
                             this.changeStateButton(this.createdDOM.Image_left, this.createdDOM.Image_right, imageID, imageArray);
                         }
 
