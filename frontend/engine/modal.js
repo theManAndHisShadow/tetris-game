@@ -176,9 +176,15 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
             this.selectValueSetting(backgroundColors, backgroundImages);
         }, 
 
+        /**
+         * 
+         * @param {string} type type background, color or image
+         * @param {string} localValue background value
+         */
+
         setBackground: function(type, localValue) {
             jsonSettings = JSON.parse(localStorage.getItem('settings'));
-            
+
             if(jsonSettings.Background){
                 if(jsonSettings.Background[2] === 'Color'){
                     this.elementsHtml.rootBackground.style.removeProperty('background-image');
@@ -208,6 +214,14 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
 
         },
 
+        /**
+         * 
+         * @param {object} left left select button
+         * @param {object} right right select button
+         * @param {number} idValue id current value color or image
+         * @param {array} array array with colors or images
+         */
+
         changeStateButton: function(left, right, idValue, array) {
             if(idValue === 0){
                 left.disabled = true;
@@ -223,6 +237,12 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
                 right.disabled = false;
             }
         }, 
+
+        /**
+         * 
+         * @param {object} colors object with background colors
+         * @param {object} images object with background images
+         */
 
         selectValueSetting: function(colors, images) {
 
@@ -247,8 +267,6 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
                         imageID = imageArray.indexOf(key);
                     }
                 }
-            } else {
-                
             }
 
             this.changeStateButton(this.createdDOM.Color_left, this.createdDOM.Color_right, colorID, colorArray);
@@ -310,6 +328,13 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
                     }
             })
         },
+
+        /**
+         * 
+         * @param {array} background selected background colors or image
+         * @param {boolean} sound toggle turn on/off sound
+         * @param {array} music background music
+         */
 
         saveValueSettings: function(background, sound, music) {
             
