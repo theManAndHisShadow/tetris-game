@@ -5,8 +5,15 @@ const Settings = function () {
     return {
         modal: {
             // change background color on website
-            changeBackground: {
-                label: 'Background',
+            changeBackgroundColor: {
+                label: 'Color',
+                prevButton: '<',
+                nextButton: '>',
+                type: 'stepper'
+            },
+
+            changeBackgroundImage: {
+                label: 'Image',
                 prevButton: '<',
                 nextButton: '>',
                 type: 'stepper'
@@ -19,7 +26,7 @@ const Settings = function () {
                 type: 'toggle'
             },
 
-            // change background music
+            // change music
             changeMusic: {
                 label: 'Music',
                 prevButton: '<',
@@ -37,12 +44,19 @@ const Settings = function () {
             black: '#202324',
         },
 
+        // background images
+        images: {
+            mountain: 'mountain.jpg',
+            forest: 'forest.jpg',
+            city: 'city.jpg'
+        },
+
         // speed of figure moving to bottom
         gravity: 0.1,
 
         renderUISettings: function(){
             
-            const modal = new CreateSettingsModal(this.modal, this.colors);
+            const modal = new CreateSettingsModal(this.modal, this.colors, this.images);
             modal.init();
 
         },
