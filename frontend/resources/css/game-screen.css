@@ -114,3 +114,32 @@
     margin-top: 15px;
     transform: translateX(-50%);
 }
+
+.ui-element {
+    color: white;
+    position: absolute;
+    width: 120px;
+    font-family: monospace;
+}
+
+#ui__scores-display {
+    top: 32px;
+    right: 18px;
+}
+
+
+#ui__figures-placed {
+    top: 46px;
+    right: 18px;
+}
+
+
+#ui__lines-completed {
+    top: 59px;
+    right: 18px;
+}
+
+#ui__stopwatch {
+    top: 72px;
+    right: 18px;
+}
