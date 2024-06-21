@@ -121,6 +121,11 @@ const Settings = function () {
                 },
             }
         },
+
+        on: function(eventName, callback) {
+            
+        },
+
         init: function () {
             console.log('[Log]: initializing Settings');
             this.renderUISettings();
