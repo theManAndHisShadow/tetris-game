@@ -100,6 +100,11 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 isCanPlayDeniedMoveFX: true,
             },
 
+            states: {
+                isGamePaused: false,
+                isGameOver: false,
+            },
+
             field: {
                 gridCellSize: gridCellSize,
                 size: fieldSize,
@@ -117,7 +122,6 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
             ui: ui,
             sounds: soundComposer,
-            gameover: false,
 
              /**
              * Create figure object and adds to game field
@@ -369,7 +373,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 });
 
                 // updating stopwatch values
-                if(this.gameover == false) {
+                if(this.states.isGamePaused == false && this.states.isGameOver == false) {
                     ui.stopwatch.update();
                 }
 
@@ -394,8 +398,11 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
              * @param {object} target target of gravity impact
              */
             gravitize: function(){
-                // If gravity turn on
-                if(SETTINGS.dev.__disableGravity.state === false){
+                let condition = this.states.isGameOver === false;
+                let gravitizeIsAllowed = this.checkMovability() && condition;
+
+                // check result condition
+                if(gravitizeIsAllowed){
                     let direction = 'down';
 
                     this.player.move({
@@ -471,12 +478,30 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 } else {
                     // TODO: add some visual
                     let endMessage = 'Game over! Your score: ' + this.ui.scores.value;
-                    this.gameover = true;
+                    this.states.isGameOver = true;
 
-                    console.log(endMessage);
-                    alert(endMessage);
+                    console.log(endMessage, this.states);
                     return false;
                 }
+            },
+
+            pause: function(){
+                this.states.isGamePaused = true;
+                console.log("[Game]: Current instance of game is paused");
+            },
+
+            resume: function(){
+                this.states.isGamePaused = false;
+                console.log("[Game]: Current instance of game is resumed");
+            },
+
+            checkMovability: function(){
+                let condition_1 = this.states.isGamePaused === false;
+                let condition_2 = this.states.isGameOver === false;
+
+                let movementIsAllowed = condition_1 && condition_2;
+
+                return movementIsAllowed;
             },
 
 
@@ -486,6 +511,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
             init: function(){
                 console.log('[Log]: initializing Game');
 
+                // TODO: remove this?
                 // fix for setInterval block
                 let self = this;
 
@@ -512,10 +538,10 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 this.player = player;
 
                 // render all game figures include movements
-                setInterval(self.render.bind(self), fpsInterval);
+                setInterval(this.render.bind(this), fpsInterval);
 
                 // update gravity impact at target figure
-                setInterval(self.gravitize.bind(self), 90 / SETTINGS.gravity);
+                setInterval(this.gravitize.bind(this), 90 / SETTINGS.gravity);
 
                 // manual fugire spawn
                 dev_ui.devSettings.__spawnFigure.execute = (data) => {
@@ -538,144 +564,154 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 controls.on('up', () => {
                     let direction = 'up';
 
-                    // Rotating figure by pressing w/UpArrow
-                    this.player.rotate({
-                        // if fugure done full rotation
-                        onFullRotate: (figure) => {
-                            // iterate coounter
-                            figure.rotations += 1;
+                    if(this.checkMovability()) {
+                        // Rotating figure by pressing w/UpArrow
+                        this.player.rotate({
+                            // if fugure done full rotation
+                            onFullRotate: (figure) => {
+                                // iterate coounter
+                                figure.rotations += 1;
 
-                            console.log('Full rotations: ' + figure.rotations)
-                        }
-                    });
+                                console.log('Full rotations: ' + figure.rotations)
+                            }
+                        });
 
-                    // Rotating figure by pressing w/UpArrow
-                    this.playerProjection.syncPosition();
+                        // Rotating figure by pressing w/UpArrow
+                        this.playerProjection.syncPosition();
+                    }
                 });
                 
                 controls.on('left', () => {
                     let direction = 'left';
                     
-                    // Moving figure to left by pressing a/LeftArrow
-                    this.player.move({
-                        direction: direction,
-                        onCollide: (figure, collideWith) => {
-                            this.playerProjection.syncPosition();
+                    if(this.checkMovability()){
+                        // Moving figure to left by pressing a/LeftArrow
+                        this.player.move({
+                            direction: direction,
+                            onCollide: (figure, collideWith) => {
+                                this.playerProjection.syncPosition();
 
-                            if(this.fxStates.isCanPlayDeniedMoveFX === true) {
-                                this.screen.tremble('right');
-                                this.sounds.play('sfx', 'denied', -0.7);
-                                this.fxStates.isCanPlayDeniedMoveFX = false;
-                            }
+                                if(this.fxStates.isCanPlayDeniedMoveFX === true) {
+                                    this.screen.tremble('right');
+                                    this.sounds.play('sfx', 'denied', -0.7);
+                                    this.fxStates.isCanPlayDeniedMoveFX = false;
+                                }
 
-                            if(collideWith == 'fieldBorder') {
-                                console.log('Figure collide with '+ direction +' border of game field');
-                            }
+                                if(collideWith == 'fieldBorder') {
+                                    console.log('Figure collide with '+ direction +' border of game field');
+                                }
 
-                            if(collideWith == 'figure') {
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
-                                this.player = this.spawnFigure();
-                            }
-                        }, 
+                                if(collideWith == 'figure') {
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
+                                    this.player = this.spawnFigure();
+                                }
+                            }, 
 
-                        onMove: (figure) => {
-                            this.fxStates.isCanPlayDeniedMoveFX = true;
+                            onMove: (figure) => {
+                                this.fxStates.isCanPlayDeniedMoveFX = true;
 
-                            // update projection position 
-                            this.playerProjection.syncPosition();
-                            this.sounds.play('sfx', 'movement', -0.7);
-                        },
-                    });
+                                // update projection position 
+                                this.playerProjection.syncPosition();
+                                this.sounds.play('sfx', 'movement', -0.7);
+                            },
+                        });
+                    }
                 });
 
                 controls.on('right', () => {
                     let direction = 'right';
 
-                    // Moving figure to left by pressing d/RightArrow
-                    this.player.move({
-                        direction: direction,
-                        onCollide: (figure, collideWith) => {
-                            this.playerProjection.syncPosition();
+                    if(this.checkMovability()){
+                        // Moving figure to left by pressing d/RightArrow
+                        this.player.move({
+                            direction: direction,
+                            onCollide: (figure, collideWith) => {
+                                this.playerProjection.syncPosition();
 
-                            if(this.fxStates.isCanPlayDeniedMoveFX === true) {
-                                this.screen.tremble('left');  
-                                this.sounds.play('sfx', 'denied', -0.7);
-                                this.fxStates.isCanPlayDeniedMoveFX = false;
-                            }
+                                if(this.fxStates.isCanPlayDeniedMoveFX === true) {
+                                    this.screen.tremble('left');  
+                                    this.sounds.play('sfx', 'denied', -0.7);
+                                    this.fxStates.isCanPlayDeniedMoveFX = false;
+                                }
 
-                            if(collideWith == 'fieldBorder') {
-                                console.log('Figure collide with '+ direction +' border of game field');
-                            } 
+                                if(collideWith == 'fieldBorder') {
+                                    console.log('Figure collide with '+ direction +' border of game field');
+                                } 
 
-                            if(collideWith == 'figure') {
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
+                                if(collideWith == 'figure') {
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
 
-                                this.player = this.spawnFigure();
-                            }
-                        },
+                                    this.player = this.spawnFigure();
+                                }
+                            },
 
-                        onMove: (figure) => {
-                            this.fxStates.isCanPlayDeniedMoveFX = true;
+                            onMove: (figure) => {
+                                this.fxStates.isCanPlayDeniedMoveFX = true;
 
-                            // update projection position 
-                            this.playerProjection.syncPosition();
-                            this.sounds.play('sfx', 'movement', -0.7);
-                        },
-                    });
+                                // update projection position 
+                                this.playerProjection.syncPosition();
+                                this.sounds.play('sfx', 'movement', -0.7);
+                            },
+                        });
+                    }
                 });
 
                 controls.on('down', () => {
                     let direction = 'down';
 
-                    // Moving figure to down by pressing s/DownArrow
-                    this.player.move({
-                        direction: direction,
-                        onCollide: (figure, collideWith) => {
-                            if(collideWith == 'fieldBorder') {
-                                // make it static
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
-                                this.ui.figures.update();
-    
-                                this.player = this.spawnFigure();
-                            }
+                    if(this.checkMovability()) {
+                        // Moving figure to down by pressing s/DownArrow
+                        this.player.move({
+                            direction: direction,
+                            onCollide: (figure, collideWith) => {
+                                if(collideWith == 'fieldBorder') {
+                                    // make it static
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
+                                    this.ui.figures.update();
 
-                            if(collideWith == 'figure') {
-                                // figure.updateStyle('color', 'green');
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
-                                this.ui.figures.update();
+                                    this.player = this.spawnFigure();
+                                }
 
-                                this.player = this.spawnFigure();
-                            }
-                        },
-                    });
+                                if(collideWith == 'figure') {
+                                    // figure.updateStyle('color', 'green');
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
+                                    this.ui.figures.update();
+
+                                    this.player = this.spawnFigure();
+                                }
+                            },
+                        });
+                    }
                 });
                 
                 controls.on('space', () => {
-                    // at space key fast move figure to down
-                    if(this.player.isFreezed == false){
-                        this.player.moveDownUntilCollide({
-                            // when it colliding with something
-                            onCollide: figure => {
-                                // start starndart procedure
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
-                                this.ui.figures.update();
+                    if(this.checkMovability()) {
+                        // at space key fast move figure to down
+                        if(this.player.isFreezed == false){
+                            this.player.moveDownUntilCollide({
+                                // when it colliding with something
+                                onCollide: figure => {
+                                    // start starndart procedure
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
+                                    this.ui.figures.update();
 
-                                this.screen.tremble('down');
-                                this.sounds.play('sfx', 'drop');
-    
-                                this.player = this.spawnFigure();
-                            },
-                        });
+                                    this.screen.tremble('down');
+                                    this.sounds.play('sfx', 'drop');
+        
+                                    this.player = this.spawnFigure();
+                                },
+                            });
+                        }
                     }
                 });
             }
