@@ -518,7 +518,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 // init settings module
                 settings.init();
 
-                dev_ui.init();
+                // deprecated
+                //dev_ui.init();
 
                 hud.init(fpsInterval);
 

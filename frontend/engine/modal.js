@@ -48,9 +48,10 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
         controlModal: function() {
             this.createModal();
 
-            this.elementsHtml.buttonOpenModal.addEventListener('click', () => {
-                this.createdDOM.modalWindow.showModal();
-            })
+            // Deprecated
+            // this.elementsHtml.buttonOpenModal.addEventListener('click', () => {
+            //     this.createdDOM.modalWindow.showModal();
+            // })
 
             const buttonClose = this.createdDOM.modalWindow.querySelector('#settings-modal__close');
                 

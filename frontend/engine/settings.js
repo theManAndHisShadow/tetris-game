@@ -68,7 +68,7 @@ const Settings = function () {
             __devMode: {
                 type: 'toggle',
                 label: 'dev mode',
-                state: true,
+                state: false,
             },
 
             __disableGravity: {
