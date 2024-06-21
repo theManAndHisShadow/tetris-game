@@ -2,7 +2,7 @@ console.log('[Log]: Starting hud.js');
 
 const HUD = function({parentScreen} = {}){
     return {
-        fps: null,
+
         scores: {
             html: null,
             value: 0,
