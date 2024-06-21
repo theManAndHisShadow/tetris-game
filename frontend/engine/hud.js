@@ -15,8 +15,8 @@ const HUD = function({parentScreen} = {}){
 
             renderAt: function(renderAt){
                 let scoresDisplay = document.createElement('div');
-                scoresDisplay.id = "ui__scores-display";
-                scoresDisplay.classList.add('ui-element');
+                scoresDisplay.id = "hud__scores-display";
+                scoresDisplay.classList.add('hud-element');
     
                 scoresDisplay.innerText = this.label + this.value;
     
@@ -38,8 +38,8 @@ const HUD = function({parentScreen} = {}){
 
             renderAt: function(renderAt){
                 let figures = document.createElement('div');
-                figures.id = "ui__figures-placed";
-                figures.classList.add('ui-element');
+                figures.id = "hud__figures-placed";
+                figures.classList.add('hud-element');
     
                 figures.innerText = this.label + this.value;
     
@@ -61,8 +61,8 @@ const HUD = function({parentScreen} = {}){
 
             renderAt: function(renderAt){
                 let lines = document.createElement('div');
-                lines.id = "ui__lines-completed";
-                lines.classList.add('ui-element');
+                lines.id = "hud__lines-completed";
+                lines.classList.add('hud-element');
     
                 lines.innerText = this.label + this.value;
     
@@ -123,8 +123,8 @@ const HUD = function({parentScreen} = {}){
 
             renderAt: function(renderAt){
                 let stopwatchElement = document.createElement('div');
-                stopwatchElement.id = "ui__stopwatch";
-                stopwatchElement.classList.add('ui-element');
+                stopwatchElement.id = "hud__stopwatch";
+                stopwatchElement.classList.add('hud-element');
     
                 stopwatchElement.innerText = this.label + this.value;
     
