@@ -8,6 +8,8 @@ const Settings = function () {
         // speed of figure moving to bottom
         gravity: 0.1,
 
+        html: null,
+
         // TODO: refactor
         modal: {
             // change background color on website
@@ -59,6 +61,9 @@ const Settings = function () {
 
         renderUISettings: function(){
             const modal = new CreateSettingsModal(this.modal, this.colors, this.images);
+
+            this.html = modal;
+
             modal.init();
         },
 
@@ -78,8 +83,10 @@ const Settings = function () {
             }
         },
 
-        on: function(eventName, callback) {
-            
+        on: function(eventName, callback){
+            if(eventName == 'open' || eventName == 'close'){
+                this.html.event[eventName].addEvent(callback);
+            }
         },
 
         init: function () {

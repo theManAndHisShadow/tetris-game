@@ -22,11 +22,13 @@ const tetris = new Game({
 });
 
 settings.on('open', () => {
-    console.log('settings window is open');
+    console.log('[Log]: settings window is open');
+    tetris.pause();
 });
 
 settings.on('close', () => {
-    console.log('settings window is closed');
+    console.log('[Log]: settings window is closed');
+    tetris.resume();
 });
 
 tetris.init();

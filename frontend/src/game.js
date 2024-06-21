@@ -497,11 +497,14 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
 
             pause: function(){
                 this.states.isGamePaused = true;
+                console.log(this.screen.html);
+                this.screen.html.classList.add('opacity-30');
                 console.log("[Game]: Current instance of game is paused");
             },
 
             resume: function(){
                 this.states.isGamePaused = false;
+                this.screen.html.classList.remove('opacity-30');
                 console.log("[Game]: Current instance of game is resumed");
             },
 
