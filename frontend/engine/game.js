@@ -398,8 +398,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
              * @param {object} target target of gravity impact
              */
             gravitize: function(){
-                let condition = this.states.isGameOver === false;
-                let gravitizeIsAllowed = this.checkMovability() && condition;
+                let condition = SETTINGS.dev.__disableGravity.state === false;
+                let gravitizeIsAllowed = condition && this.checkMovability();
 
                 // check result condition
                 if(gravitizeIsAllowed){
