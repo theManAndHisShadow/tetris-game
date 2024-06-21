@@ -1,4 +1,4 @@
-console.log('[Log]: Starting ui.js');
+console.log('[Log]: Starting hud.js');
 
 const UI = function({parentScreen} = {}){
     return {
@@ -143,7 +143,7 @@ const UI = function({parentScreen} = {}){
         },
 
         init: function(fps){
-            console.log('[Log]: initializing User Interface');
+            console.log('[Log]: initializing HUD');
 
             this.stopwatch.fps = fps;
             console.log(this);
