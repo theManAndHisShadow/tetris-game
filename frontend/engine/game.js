@@ -718,6 +718,6 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
         }
 
     } else {
-        throw new Error("Game class param 'screen' has bad value");
+        throw new Error("Game class param 'screenElement' has bad value");
     }
 }
