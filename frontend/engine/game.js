@@ -40,7 +40,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
         const settings = new Settings();
 
-        const ui = new UI({parentScreen: screenElement});
+        const hud = new HUD({parentScreen: screenElement});
 
         /**
          * Internal helper function to generate new ID
@@ -120,7 +120,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 height: nextFiguresHeight,
             },
 
-            ui: ui,
+            hud: hud,
             sounds: soundComposer,
 
              /**
@@ -223,8 +223,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                         });
                         
                         // 10 point per deleted block
-                        this.ui.scores.add(this.field.size[0] * 10);
-                        this.ui.lines.update();
+                        this.hud.scores.add(this.field.size[0] * 10);
+                        this.hud.lines.update();
 
                         // additional checking after line is deleted
                         this.checkLineCompletitions();
@@ -374,7 +374,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
                 // updating stopwatch values
                 if(this.states.isGamePaused == false && this.states.isGameOver == false) {
-                    ui.stopwatch.update();
+                    hud.stopwatch.update();
                 }
 
 
@@ -413,7 +413,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                                 figure.freeze();
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
-                                this.ui.figures.update();
+                                this.hud.figures.update();
 
                                 this.player = this.spawnFigure();
                             }
@@ -423,7 +423,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
-                                this.ui.figures.update();
+                                this.hud.figures.update();
 
                                 this.player = this.spawnFigure();
                             }
@@ -477,7 +477,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                     return figure;
                 } else {
                     // TODO: add some visual
-                    let endMessage = 'Game over! Your score: ' + this.ui.scores.value;
+                    let endMessage = 'Game over! Your score: ' + this.hud.scores.value;
                     this.states.isGameOver = true;
 
                     console.log(endMessage, this.states);
@@ -520,7 +520,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
                 dev_ui.init();
 
-                ui.init(fpsInterval);
+                hud.init(fpsInterval);
 
                 // binding a settings object to a global variable
                 SETTINGS = settings;
@@ -673,7 +673,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                                     figure.freeze();
                                     this.setHighestLine(figure);
                                     this.checkLineCompletitions();
-                                    this.ui.figures.update();
+                                    this.hud.figures.update();
 
                                     this.player = this.spawnFigure();
                                 }
@@ -683,7 +683,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                                     figure.freeze();
                                     this.setHighestLine(figure);
                                     this.checkLineCompletitions();
-                                    this.ui.figures.update();
+                                    this.hud.figures.update();
 
                                     this.player = this.spawnFigure();
                                 }
@@ -703,7 +703,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                                     figure.freeze();
                                     this.setHighestLine(figure);
                                     this.checkLineCompletitions();
-                                    this.ui.figures.update();
+                                    this.hud.figures.update();
 
                                     this.screen.tremble('down');
                                     this.sounds.play('sfx', 'drop');

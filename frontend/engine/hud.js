@@ -1,6 +1,6 @@
 console.log('[Log]: Starting hud.js');
 
-const UI = function({parentScreen} = {}){
+const HUD = function({parentScreen} = {}){
     return {
         fps: null,
         scores: {
