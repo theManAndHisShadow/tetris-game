@@ -1,14 +1,16 @@
 console.log('[Log]: Starting game.js');
 
-/**
- * global SETTINGS var ref to settings object.
- * This value is global for easy acces to settings from any place in game logic
- * Nota bene! Before settings object inits this var is null!
- */
-let SETTINGS = null;
+import { getRandomNumber } from './misc/helpers.js';
+
+import { Renderer } from './core/render.js';
+import { GameScreen } from './core/screen.js';
+import { Figure, FigureProjection } from './core/figure.js';
+import { Controls } from './core/controls.js';
+import { SoundComposer } from './core/sound.js';
+import { HUD } from './core/hud.js';
 
 
-const Game = function({screenElement, fieldSize, gridCellSize}){    
+const Game = function({screenElement, fieldSize, gridCellSize, settings, devSettings}){    
     gridCellSize = gridCellSize || 20;
     fieldSize = fieldSize || [10, 16];
 
@@ -38,7 +40,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
             context: screen.canvas.getContext("2d"),
         });
 
-        const settings = new Settings();
+        // deprecated
+        // const settings = new Settings();
 
         const hud = new HUD({parentScreen: screenElement});
 
@@ -58,8 +61,6 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
          * @param {string} linesColor color of grid line
          */
         function __drawFieldGrid(field, linesColor){
-            linesColor = linesColor || SETTINGS.themes.night.gridColor;
-            
             const horizontal_amount = field.width / field.gridCellSize;
             const verical_amount = field.height / field.gridCellSize;
 
@@ -80,7 +81,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
             }
         }
 
-        const dev_ui = new DevUI(settings.dev);
+        // deprecated
+        // const dev_ui = new DevUI(settings.dev);
 
         const controls = new Controls({target: screen});
 
@@ -90,6 +92,9 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
         const fpsInterval = (1000 / fps);
 
         return {
+            settings: settings,
+            devSettings: devSettings,
+            
             screen: screen,
             player: null,
             playerProjection: null,
@@ -271,7 +276,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                         cx: this.field.width + (this.nextFigures.width / 2),
                         // use equal portions of minidisplay
                         cy: (miniDisplaySectionSize * i + 1) + (miniDisplaySectionSize / 2),
-                        color: SETTINGS.themes.night.figures[shape],
+                        color: this.settings.themes.night.figures[shape],
                         parent: this.field,
                         size: 10,
     
@@ -347,12 +352,16 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                     x: 0, y: 0,
                     w: renderer.context.canvas.width,
                     h: renderer.context.canvas.height,
-                    c: SETTINGS.themes.night.fieldColor,
+                    c: this.settings.themes.night.fieldColor,
                 })
 
-                if(settings.dev.__drawFieldGrid.state === true) {
-                    __drawFieldGrid(this.field);
-                }
+                // deprecated
+                // if(this.devSettings.data.drawFieldGrid.state === true) {
+                //     __drawFieldGrid(this.field);
+                // }
+
+                //temp
+                __drawFieldGrid(this.field, this.settings.themes.night.gridColor);
 
                 // nextFigures
                 renderer.drawRect({
@@ -378,7 +387,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 }
 
 
-                if(settings.dev.__renderHighestLine.state === true) {
+                // todo fix this
+                if(true) {
                     // Calculating highest line hight pixels
                     let highestLineHeight = renderer.context.canvas.height - this.field.highestLine * this.field.gridCellSize;
 
@@ -398,7 +408,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
              * @param {object} target target of gravity impact
              */
             gravitize: function(){
-                let condition = SETTINGS.dev.__disableGravity.state === false;
+                let condition = this.devSettings.getValue('disableGravity') === false;
                 let gravitizeIsAllowed = condition && this.checkMovability();
 
                 // check result condition
@@ -454,7 +464,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                     let figure = this.createFigure({
                         // update Game stored figure ID
                         id: __generateID(),
-                        color: SETTINGS.themes.night.figures[shape],
+                        color: this.settings.themes.night.figures[shape],
                         parent: this.field,
 
                         // generate each time random figure
@@ -515,16 +525,18 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 // fix for setInterval block
                 let self = this;
 
+                // deprecated
                 // init settings module
-                settings.init();
+                // settings.init();
 
                 // deprecated
                 //dev_ui.init();
 
                 hud.init(fpsInterval);
 
+                // deprecated
                 // binding a settings object to a global variable
-                SETTINGS = settings;
+                // this.settings = settings;
 
                 // init controls module
                 controls.init();
@@ -542,24 +554,25 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 setInterval(this.render.bind(this), fpsInterval);
 
                 // update gravity impact at target figure
-                setInterval(this.gravitize.bind(this), 90 / SETTINGS.gravity);
+                setInterval(this.gravitize.bind(this), 90 / this.settings.gravity);
 
+                // deprecated
                 // manual fugire spawn
-                dev_ui.devSettings.__spawnFigure.execute = (data) => {
-                    this.field.figures = [];
-                    this.player = null;
-                    this.player = this.spawnFigure(data);
-                };
+                // dev_ui.devSettings.__spawnFigure.execute = (data) => {
+                //     this.field.figures = [];
+                //     this.player = null;
+                //     this.player = this.spawnFigure(data);
+                // };
                 
                 // some panel theming
-                if(dev_ui.devSettings.__devMode.state === true) {
-                    let devPanel = document.querySelector('#dev-panel');
-                    let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
+                // if(dev_ui.devSettings.__devMode.state === true) {
+                //     let devPanel = document.querySelector('#dev-panel');
+                //     let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
 
-                    manualSpawnButtons.forEach(spawnButton => { 
-                        spawnButton.style.background = SETTINGS.themes.night.figures[spawnButton.getAttribute('data-button-value')] 
-                    });
-                }
+                //     manualSpawnButtons.forEach(spawnButton => { 
+                //         spawnButton.style.background = this.settings.themes.night.figures[spawnButton.getAttribute('data-button-value')] 
+                //     });
+                // }
 
                 // Movement managment
                 controls.on('up', () => {
@@ -722,3 +735,5 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
         throw new Error("Game class param 'screenElement' has bad value");
     }
 }
+
+export { Game }; 

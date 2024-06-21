@@ -45,3 +45,5 @@ function addLeadingZero(time){
 
   return corrected;
 }
+
+export { getRandomNumber, rotatePoint, addLeadingZero };

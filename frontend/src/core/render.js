@@ -73,3 +73,5 @@ const Renderer = function({context}) {
         throw new Error("Render class param context has bad value");
     }
 }
+
+export { Renderer };

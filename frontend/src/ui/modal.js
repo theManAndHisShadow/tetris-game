@@ -49,9 +49,9 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
             this.createModal();
 
             // Deprecated
-            // this.elementsHtml.buttonOpenModal.addEventListener('click', () => {
-            //     this.createdDOM.modalWindow.showModal();
-            // })
+            this.elementsHtml.buttonOpenModal.addEventListener('click', () => {
+                this.createdDOM.modalWindow.showModal();
+            })
 
             const buttonClose = this.createdDOM.modalWindow.querySelector('#settings-modal__close');
                 
@@ -149,7 +149,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
         },
 
         getValueSettings: function () {
-            jsonSettings = JSON.parse(localStorage.getItem('settings'));
+            const jsonSettings = JSON.parse(localStorage.getItem('settings'));
             this.loadedSettings = jsonSettings;
             
             for (const [key, value] of Object.entries(jsonSettings)) {
@@ -184,7 +184,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
          */
 
         setBackground: function(type, localValue) {
-            jsonSettings = JSON.parse(localStorage.getItem('settings'));
+            const jsonSettings = JSON.parse(localStorage.getItem('settings'));
 
             if(jsonSettings.Background){
                 if(jsonSettings.Background[2] === 'Color'){
@@ -352,3 +352,5 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
         }
     }
 }
+
+export { CreateSettingsModal };

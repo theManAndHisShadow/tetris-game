@@ -1,5 +1,7 @@
 console.log('[Log]: Starting figure.js');
 
+import { rotatePoint } from "../misc/helpers.js";
+
 const Block = function({id, x, y, color, size, lineGroup, parentFigureID} = {}){
     return {
         id: id,
@@ -33,7 +35,8 @@ const Block = function({id, x, y, color, size, lineGroup, parentFigureID} = {}){
  * @param {CanvasRenderingContext2D} renderer 
  * @returns {object}
  */
-const Figure = function({id, parent, siblings, cx, cy, color, size, shape, renderer} = {}){
+const Figure = function({id, parent, siblings, cx, cy, renderCenterPoint, color, size, shape, renderer} = {}){
+    renderCenterPoint = renderCenterPoint || false;
     /**
      * Internal helper function to get matrix of some blockicular shape.
      * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
@@ -183,6 +186,8 @@ const Figure = function({id, parent, siblings, cx, cy, color, size, shape, rende
 
         // this property is true when figure spawned and falling down
         isFalling: true,
+
+        renderCenterPoint: renderCenterPoint,
 
         parent: parent,
         siblings: siblings,
@@ -563,7 +568,7 @@ const Figure = function({id, parent, siblings, cx, cy, color, size, shape, rende
                 });
             });
 
-            if(SETTINGS.dev.__renderFigureCenter.state === true){
+            if(this.renderCenterPoint === true){
                 let r = 4;
 
                 this.renderer.drawCircle({
@@ -619,3 +624,5 @@ const FigureProjection = function(projectionOf){
         }
     }
 };
+
+export { Figure, FigureProjection };

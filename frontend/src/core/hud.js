@@ -1,5 +1,7 @@
 console.log('[Log]: Starting hud.js');
 
+import { addLeadingZero } from "../misc/helpers.js";
+
 const HUD = function({parentScreen} = {}){
     return {
 
@@ -151,3 +153,5 @@ const HUD = function({parentScreen} = {}){
         },
     };
 };
+
+export { HUD };
