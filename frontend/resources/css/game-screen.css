@@ -21,6 +21,7 @@
     height: fit-content;
     padding: 15px;
     margin: 0;
+    transition: 0.3s ease;
 }
 
 #app__screen canvas {
