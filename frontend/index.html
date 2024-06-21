@@ -30,17 +30,24 @@
             </div> -->
         </div>
 
-        <script src="./engine/helpers.js"></script>
-        <script src="./engine/screen.js"></script>
-        <script src="./engine/render.js"></script>
-        <script src="./engine/settings.js"></script>
-        <script src="./engine/modal.js"></script>
-        <script src="./engine/dev.js"></script>
-        <script src="./engine/hud.js"></script>
-        <script src="./engine/controls.js"></script>
-        <script src="./engine/figure.js"></script>
-        <script src="./engine/sound.js"></script>
-        <script src="./engine/game.js"></script>
+        <!-- projectwide global file -->
+        <script src="./src/misc/helpers.js"></script>
+
+        <!-- Core files -->
+        <script src="./src/core/screen.js"></script>
+        <script src="./src/core/render.js"></script>
+        <script src="./src/core/controls.js"></script>
+        <script src="./src/core/figure.js"></script>
+        <script src="./src/core/sound.js"></script>
+        <script src="./src/core/hud.js"></script>
+
+        <!-- Additional files -->
+        <script src="./src/settings/settings.js"></script>
+        <script src="./src/ui/modal.js"></script>
+        <script src="./src/dev/dev.js"></script>
+        <script src="./src/game.js"></script>
+
+        <!-- Main/index app file -->
         <script src="./app.js"></script>
     </body>
 </html>
