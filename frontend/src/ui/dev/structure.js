@@ -7,7 +7,7 @@ const data = {
                     id: 'devMode',
                     label: 'dev mode',
                     type: 'toggle',
-                    state: false,
+                    state: true,
                 },
 
                 {
@@ -15,6 +15,13 @@ const data = {
                     type: 'toggle',
                     label: 'disable gravity',
                     state: false,
+                },
+
+                {
+                    id: 'renderFieldGrid',
+                    type: 'toggle',
+                    label: 'render field grid',
+                    state: true,
                 },
 
                 {

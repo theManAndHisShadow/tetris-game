@@ -349,8 +349,9 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                     c: this.settings.themes.night.fieldColor,
                 })
 
-                //TODO: fix this
-                __drawFieldGrid(this.field, this.settings.themes.night.gridColor);
+                if(this.devSettings.getValue('renderFieldGrid') === true) {
+                    __drawFieldGrid(this.field, this.settings.themes.night.gridColor);
+                }
 
                 // nextFigures
                 renderer.drawRect({
@@ -368,13 +369,15 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 // re-render
                 this.field.figures.forEach(fieldItem => {
                     fieldItem.render();     
+
+                    // fixing center point rendering 
+                    fieldItem.renderCenterPoint = this.devSettings.getValue('renderFigureCenter');
                 });
 
                 // updating stopwatch values
                 if(this.states.isGamePaused == false && this.states.isGameOver == false) {
                     hud.stopwatch.update();
                 }
-
 
                 // todo fix this
                 if(true) {
@@ -553,25 +556,23 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 // update gravity impact at target figure
                 setInterval(this.gravitize.bind(this), 90 / this.settings.gravity);
 
-                // TODO: fix this
-                // deprecated
                 // manual fugire spawn
-                // dev_ui.devSettings.__spawnFigure.execute = (data) => {
-                //     this.field.figures = [];
-                //     this.player = null;
-                //     this.player = this.spawnFigure(data);
-                // };
+                this.devSettings.getOption('spawnFigure').execute = (data) => {
+                    this.field.figures = [];
+                    this.player = null;
+                    this.player = this.spawnFigure(data);
+                };
                 
-                // TODO: fix this
                 // some panel theming
-                // if(dev_ui.devSettings.__devMode.state === true) {
-                //     let devPanel = document.querySelector('#dev-panel');
-                //     let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
+                if(this.devSettings.getValue('devMode') === true) {
+                    let devPanel = this.devSettings.html.rootNodeRef;
+                    let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
+                    console.log(devPanel);
 
-                //     manualSpawnButtons.forEach(spawnButton => { 
-                //         spawnButton.style.background = this.settings.themes.night.figures[spawnButton.getAttribute('data-button-value')] 
-                //     });
-                // }
+                    manualSpawnButtons.forEach(spawnButton => { 
+                        spawnButton.style.background = this.settings.themes.night.figures[spawnButton.getAttribute('data-button-value')] 
+                    });
+                }
 
                 // Movement managment
                 controls.on('up', () => {
