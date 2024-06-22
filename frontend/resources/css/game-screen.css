@@ -21,6 +21,7 @@
     height: fit-content;
     padding: 15px;
     margin: 0;
+    transition: 0.3s ease;
 }
 
 #app__screen canvas {
@@ -32,10 +33,6 @@
 #app__restart-button {
     position: relative;
     left: 10px;
-}
-
-#settings {
-
 }
 
 #settings-button {
@@ -115,31 +112,31 @@
     transform: translateX(-50%);
 }
 
-.ui-element {
+.hud-element {
     color: white;
     position: absolute;
     width: 120px;
     font-family: monospace;
 }
 
-#ui__scores-display {
+#hud__scores-display {
     top: 32px;
     right: 18px;
 }
 
 
-#ui__figures-placed {
+#hud__figures-placed {
     top: 46px;
     right: 18px;
 }
 
 
-#ui__lines-completed {
+#hud__lines-completed {
     top: 59px;
     right: 18px;
 }
 
-#ui__stopwatch {
+#hud__stopwatch {
     top: 72px;
     right: 18px;
 }

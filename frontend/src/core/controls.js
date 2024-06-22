@@ -75,3 +75,5 @@ const Controls = function(){
         },
     };
 }
+
+export { Controls };

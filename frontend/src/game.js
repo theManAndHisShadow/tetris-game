@@ -1,14 +1,16 @@
 console.log('[Log]: Starting game.js');
 
-/**
- * global SETTINGS var ref to settings object.
- * This value is global for easy acces to settings from any place in game logic
- * Nota bene! Before settings object inits this var is null!
- */
-let SETTINGS = null;
+import { getRandomNumber } from './misc/helpers.js';
+
+import { Renderer } from './core/render.js';
+import { GameScreen } from './core/screen.js';
+import { Figure, FigureProjection } from './core/figure.js';
+import { Controls } from './core/controls.js';
+import { SoundComposer } from './core/sound.js';
+import { HUD } from './core/hud.js';
 
 
-const Game = function({screenElement, fieldSize, gridCellSize}){    
+const Game = function({screenElement, fieldSize, gridCellSize, settings, devSettings}){    
     gridCellSize = gridCellSize || 20;
     fieldSize = fieldSize || [10, 16];
 
@@ -38,9 +40,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
             context: screen.canvas.getContext("2d"),
         });
 
-        const settings = new Settings();
-
-        const ui = new UI({parentScreen: screenElement});
+        const hud = new HUD({parentScreen: screenElement});
 
         /**
          * Internal helper function to generate new ID
@@ -58,8 +58,6 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
          * @param {string} linesColor color of grid line
          */
         function __drawFieldGrid(field, linesColor){
-            linesColor = linesColor || SETTINGS.themes.night.gridColor;
-            
             const horizontal_amount = field.width / field.gridCellSize;
             const verical_amount = field.height / field.gridCellSize;
 
@@ -80,8 +78,6 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
             }
         }
 
-        const dev_ui = new DevUI(settings.dev);
-
         const controls = new Controls({target: screen});
 
         const soundComposer = new SoundComposer();
@@ -90,6 +86,9 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
         const fpsInterval = (1000 / fps);
 
         return {
+            settings: settings,
+            devSettings: devSettings,
+            
             screen: screen,
             player: null,
             playerProjection: null,
@@ -98,6 +97,11 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
             fxStates: {
                 // Check if denied move effect can be played 
                 isCanPlayDeniedMoveFX: true,
+            },
+
+            states: {
+                isGamePaused: false,
+                isGameOver: false,
             },
 
             field: {
@@ -115,9 +119,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 height: nextFiguresHeight,
             },
 
-            ui: ui,
+            hud: hud,
             sounds: soundComposer,
-            gameover: false,
 
              /**
              * Create figure object and adds to game field
@@ -219,8 +222,8 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                         });
                         
                         // 10 point per deleted block
-                        this.ui.scores.add(this.field.size[0] * 10);
-                        this.ui.lines.update();
+                        this.hud.scores.add(this.field.size[0] * 10);
+                        this.hud.lines.update();
 
                         // additional checking after line is deleted
                         this.checkLineCompletitions();
@@ -267,7 +270,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                         cx: this.field.width + (this.nextFigures.width / 2),
                         // use equal portions of minidisplay
                         cy: (miniDisplaySectionSize * i + 1) + (miniDisplaySectionSize / 2),
-                        color: SETTINGS.themes.night.figures[shape],
+                        color: this.settings.themes.night.figures[shape],
                         parent: this.field,
                         size: 10,
     
@@ -343,11 +346,11 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                     x: 0, y: 0,
                     w: renderer.context.canvas.width,
                     h: renderer.context.canvas.height,
-                    c: SETTINGS.themes.night.fieldColor,
+                    c: this.settings.themes.night.fieldColor,
                 })
 
-                if(settings.dev.__drawFieldGrid.state === true) {
-                    __drawFieldGrid(this.field);
+                if(this.devSettings.getValue('renderFieldGrid') === true) {
+                    __drawFieldGrid(this.field, this.settings.themes.night.gridColor);
                 }
 
                 // nextFigures
@@ -366,15 +369,18 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 // re-render
                 this.field.figures.forEach(fieldItem => {
                     fieldItem.render();     
+
+                    // fixing center point rendering 
+                    fieldItem.renderCenterPoint = this.devSettings.getValue('renderFigureCenter');
                 });
 
                 // updating stopwatch values
-                if(this.gameover == false) {
-                    ui.stopwatch.update();
+                if(this.states.isGamePaused == false && this.states.isGameOver == false) {
+                    hud.stopwatch.update();
                 }
 
-
-                if(settings.dev.__renderHighestLine.state === true) {
+                // todo fix this
+                if(true) {
                     // Calculating highest line hight pixels
                     let highestLineHeight = renderer.context.canvas.height - this.field.highestLine * this.field.gridCellSize;
 
@@ -394,8 +400,11 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
              * @param {object} target target of gravity impact
              */
             gravitize: function(){
-                // If gravity turn on
-                if(SETTINGS.dev.__disableGravity.state === false){
+                let condition = this.devSettings.getValue('disableGravity') === false;
+                let gravitizeIsAllowed = condition && this.checkMovability();
+
+                // check result condition
+                if(gravitizeIsAllowed){
                     let direction = 'down';
 
                     this.player.move({
@@ -406,7 +415,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                                 figure.freeze();
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
-                                this.ui.figures.update();
+                                this.hud.figures.update();
 
                                 this.player = this.spawnFigure();
                             }
@@ -416,7 +425,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
 
                                 this.setHighestLine(figure);
                                 this.checkLineCompletitions();
-                                this.ui.figures.update();
+                                this.hud.figures.update();
 
                                 this.player = this.spawnFigure();
                             }
@@ -447,7 +456,7 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                     let figure = this.createFigure({
                         // update Game stored figure ID
                         id: __generateID(),
-                        color: SETTINGS.themes.night.figures[shape],
+                        color: this.settings.themes.night.figures[shape],
                         parent: this.field,
 
                         // generate each time random figure
@@ -470,14 +479,53 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                     return figure;
                 } else {
                     // TODO: add some visual
-                    let endMessage = 'Game over! Your score: ' + this.ui.scores.value;
-                    this.gameover = true;
+                    let endMessage = 'Game over! Your score: ' + this.hud.scores.value;
+                    this.states.isGameOver = true;
 
-                    console.log(endMessage);
-                    alert(endMessage);
+                    console.log(endMessage, this.states);
                     return false;
                 }
             },
+
+
+
+            /**
+             * Pauses game process, antipod of Game.resume()
+             */
+            pause: function(){
+                this.states.isGamePaused = true;
+
+                this.screen.html.classList.add('opacity-60');
+                console.log("[Game]: Current instance of game is paused");
+            },
+
+
+
+            /**
+             * Resumes game process, antipod of Game.pause()
+             */
+            resume: function(){
+                this.states.isGamePaused = false;
+
+                this.screen.html.classList.remove('opacity-60');
+                console.log("[Game]: Current instance of game is resumed");
+            },
+
+
+
+            /**
+             * 
+             * @returns 
+             */
+            checkMovability: function(){
+                let condition_1 = this.states.isGamePaused === false;
+                let condition_2 = this.states.isGameOver === false;
+
+                let movementIsAllowed = condition_1 && condition_2;
+
+                return movementIsAllowed;
+            },
+
 
 
             /**
@@ -486,51 +534,43 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
             init: function(){
                 console.log('[Log]: initializing Game');
 
-                // fix for setInterval block
-                let self = this;
-
-                // init settings module
-                settings.init();
-
-                dev_ui.init();
-
-                ui.init(fpsInterval);
-
-                // binding a settings object to a global variable
-                SETTINGS = settings;
-
                 // init controls module
                 controls.init();
 
+                // init sound system
                 soundComposer.init();
 
                 // generating initial queue of random figures
                 this.generateQueue(3);
+
+                // init game hud
+                hud.init(fpsInterval);
 
                 // create and add player figure
                 let player = this.spawnFigure();
                 this.player = player;
 
                 // render all game figures include movements
-                setInterval(self.render.bind(self), fpsInterval);
+                setInterval(this.render.bind(this), fpsInterval);
 
                 // update gravity impact at target figure
-                setInterval(self.gravitize.bind(self), 90 / SETTINGS.gravity);
+                setInterval(this.gravitize.bind(this), 90 / this.settings.gravity);
 
                 // manual fugire spawn
-                dev_ui.devSettings.__spawnFigure.execute = (data) => {
+                this.devSettings.getOption('spawnFigure').execute = (data) => {
                     this.field.figures = [];
                     this.player = null;
                     this.player = this.spawnFigure(data);
                 };
                 
                 // some panel theming
-                if(dev_ui.devSettings.__devMode.state === true) {
-                    let devPanel = document.querySelector('#dev-panel');
+                if(this.devSettings.getValue('devMode') === true) {
+                    let devPanel = this.devSettings.html.rootNodeRef;
                     let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
+                    console.log(devPanel);
 
                     manualSpawnButtons.forEach(spawnButton => { 
-                        spawnButton.style.background = SETTINGS.themes.night.figures[spawnButton.getAttribute('data-button-value')] 
+                        spawnButton.style.background = this.settings.themes.night.figures[spawnButton.getAttribute('data-button-value')] 
                     });
                 }
 
@@ -538,150 +578,162 @@ const Game = function({screenElement, fieldSize, gridCellSize}){
                 controls.on('up', () => {
                     let direction = 'up';
 
-                    // Rotating figure by pressing w/UpArrow
-                    this.player.rotate({
-                        // if fugure done full rotation
-                        onFullRotate: (figure) => {
-                            // iterate coounter
-                            figure.rotations += 1;
+                    if(this.checkMovability()) {
+                        // Rotating figure by pressing w/UpArrow
+                        this.player.rotate({
+                            // if fugure done full rotation
+                            onFullRotate: (figure) => {
+                                // iterate coounter
+                                figure.rotations += 1;
 
-                            console.log('Full rotations: ' + figure.rotations)
-                        }
-                    });
+                                console.log('Full rotations: ' + figure.rotations)
+                            }
+                        });
 
-                    // Rotating figure by pressing w/UpArrow
-                    this.playerProjection.syncPosition();
+                        // Rotating figure by pressing w/UpArrow
+                        this.playerProjection.syncPosition();
+                    }
                 });
                 
                 controls.on('left', () => {
                     let direction = 'left';
                     
-                    // Moving figure to left by pressing a/LeftArrow
-                    this.player.move({
-                        direction: direction,
-                        onCollide: (figure, collideWith) => {
-                            this.playerProjection.syncPosition();
+                    if(this.checkMovability()){
+                        // Moving figure to left by pressing a/LeftArrow
+                        this.player.move({
+                            direction: direction,
+                            onCollide: (figure, collideWith) => {
+                                this.playerProjection.syncPosition();
 
-                            if(this.fxStates.isCanPlayDeniedMoveFX === true) {
-                                this.screen.tremble('right');
-                                this.sounds.play('sfx', 'denied', -0.7);
-                                this.fxStates.isCanPlayDeniedMoveFX = false;
-                            }
+                                if(this.fxStates.isCanPlayDeniedMoveFX === true) {
+                                    this.screen.tremble('right');
+                                    this.sounds.play('sfx', 'denied', -0.7);
+                                    this.fxStates.isCanPlayDeniedMoveFX = false;
+                                }
 
-                            if(collideWith == 'fieldBorder') {
-                                console.log('Figure collide with '+ direction +' border of game field');
-                            }
+                                if(collideWith == 'fieldBorder') {
+                                    console.log('Figure collide with '+ direction +' border of game field');
+                                }
 
-                            if(collideWith == 'figure') {
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
-                                this.player = this.spawnFigure();
-                            }
-                        }, 
+                                if(collideWith == 'figure') {
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
+                                    this.player = this.spawnFigure();
+                                }
+                            }, 
 
-                        onMove: (figure) => {
-                            this.fxStates.isCanPlayDeniedMoveFX = true;
+                            onMove: (figure) => {
+                                this.fxStates.isCanPlayDeniedMoveFX = true;
 
-                            // update projection position 
-                            this.playerProjection.syncPosition();
-                            this.sounds.play('sfx', 'movement', -0.7);
-                        },
-                    });
+                                // update projection position 
+                                this.playerProjection.syncPosition();
+                                this.sounds.play('sfx', 'movement', -0.7);
+                            },
+                        });
+                    }
                 });
 
                 controls.on('right', () => {
                     let direction = 'right';
 
-                    // Moving figure to left by pressing d/RightArrow
-                    this.player.move({
-                        direction: direction,
-                        onCollide: (figure, collideWith) => {
-                            this.playerProjection.syncPosition();
+                    if(this.checkMovability()){
+                        // Moving figure to left by pressing d/RightArrow
+                        this.player.move({
+                            direction: direction,
+                            onCollide: (figure, collideWith) => {
+                                this.playerProjection.syncPosition();
 
-                            if(this.fxStates.isCanPlayDeniedMoveFX === true) {
-                                this.screen.tremble('left');  
-                                this.sounds.play('sfx', 'denied', -0.7);
-                                this.fxStates.isCanPlayDeniedMoveFX = false;
-                            }
+                                if(this.fxStates.isCanPlayDeniedMoveFX === true) {
+                                    this.screen.tremble('left');  
+                                    this.sounds.play('sfx', 'denied', -0.7);
+                                    this.fxStates.isCanPlayDeniedMoveFX = false;
+                                }
 
-                            if(collideWith == 'fieldBorder') {
-                                console.log('Figure collide with '+ direction +' border of game field');
-                            } 
+                                if(collideWith == 'fieldBorder') {
+                                    console.log('Figure collide with '+ direction +' border of game field');
+                                } 
 
-                            if(collideWith == 'figure') {
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
+                                if(collideWith == 'figure') {
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
 
-                                this.player = this.spawnFigure();
-                            }
-                        },
+                                    this.player = this.spawnFigure();
+                                }
+                            },
 
-                        onMove: (figure) => {
-                            this.fxStates.isCanPlayDeniedMoveFX = true;
+                            onMove: (figure) => {
+                                this.fxStates.isCanPlayDeniedMoveFX = true;
 
-                            // update projection position 
-                            this.playerProjection.syncPosition();
-                            this.sounds.play('sfx', 'movement', -0.7);
-                        },
-                    });
+                                // update projection position 
+                                this.playerProjection.syncPosition();
+                                this.sounds.play('sfx', 'movement', -0.7);
+                            },
+                        });
+                    }
                 });
 
                 controls.on('down', () => {
                     let direction = 'down';
 
-                    // Moving figure to down by pressing s/DownArrow
-                    this.player.move({
-                        direction: direction,
-                        onCollide: (figure, collideWith) => {
-                            if(collideWith == 'fieldBorder') {
-                                // make it static
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
-                                this.ui.figures.update();
-    
-                                this.player = this.spawnFigure();
-                            }
+                    if(this.checkMovability()) {
+                        // Moving figure to down by pressing s/DownArrow
+                        this.player.move({
+                            direction: direction,
+                            onCollide: (figure, collideWith) => {
+                                if(collideWith == 'fieldBorder') {
+                                    // make it static
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
+                                    this.hud.figures.update();
 
-                            if(collideWith == 'figure') {
-                                // figure.updateStyle('color', 'green');
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
-                                this.ui.figures.update();
+                                    this.player = this.spawnFigure();
+                                }
 
-                                this.player = this.spawnFigure();
-                            }
-                        },
-                    });
+                                if(collideWith == 'figure') {
+                                    // figure.updateStyle('color', 'green');
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
+                                    this.hud.figures.update();
+
+                                    this.player = this.spawnFigure();
+                                }
+                            },
+                        });
+                    }
                 });
                 
                 controls.on('space', () => {
-                    // at space key fast move figure to down
-                    if(this.player.isFreezed == false){
-                        this.player.moveDownUntilCollide({
-                            // when it colliding with something
-                            onCollide: figure => {
-                                // start starndart procedure
-                                figure.freeze();
-                                this.setHighestLine(figure);
-                                this.checkLineCompletitions();
-                                this.ui.figures.update();
+                    if(this.checkMovability()) {
+                        // at space key fast move figure to down
+                        if(this.player.isFreezed == false){
+                            this.player.moveDownUntilCollide({
+                                // when it colliding with something
+                                onCollide: figure => {
+                                    // start starndart procedure
+                                    figure.freeze();
+                                    this.setHighestLine(figure);
+                                    this.checkLineCompletitions();
+                                    this.hud.figures.update();
 
-                                this.screen.tremble('down');
-                                this.sounds.play('sfx', 'drop');
-    
-                                this.player = this.spawnFigure();
-                            },
-                        });
+                                    this.screen.tremble('down');
+                                    this.sounds.play('sfx', 'drop');
+        
+                                    this.player = this.spawnFigure();
+                                },
+                            });
+                        }
                     }
                 });
             }
         }
 
     } else {
-        throw new Error("Game class param 'screen' has bad value");
+        throw new Error("Game class param 'screenElement' has bad value");
     }
 }
+
+export { Game }; 

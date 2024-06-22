@@ -1,5 +1,7 @@
 console.log('[Log]: Starting screen.js');
 
+import { getRandomNumber } from "../misc/helpers.js";
+
 const GameScreen = function({html, canvas}){
     return {
         html: html,
@@ -39,3 +41,5 @@ const GameScreen = function({html, canvas}){
         },
     };
 };
+
+export { GameScreen };

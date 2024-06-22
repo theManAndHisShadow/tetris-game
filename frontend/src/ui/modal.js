@@ -1,13 +1,47 @@
 
-const TemplateSettingObj = function(background, turn, music){
+const TemplateSettingObj = function (background, turn, music) {
     this.Background = background;
     this.Sound = turn;
     this.Music = music;
 }
 
-const CreateSettingsModal = function(modalSettings, backgroundColors, backgroundImages) {
+const CreateSettingsModal = function (modalSettings, backgroundColors, backgroundImages) {
 
     return {
+        // pseudo event system
+        event: {
+            open: {
+                // storing all handler functions in array
+                // after that invoking all of them in .executeAll();
+                actionsQueue: [],
+
+                addEvent: function (cb) {
+                    this.actionsQueue.push(cb);
+                },
+
+                executeAll: function () {
+                    this.actionsQueue.forEach(cb => {
+                        cb();
+                    })
+                },
+            },
+
+            close: {
+                // storing all handler functions in array
+                // after that invoking all of them in .executeAll();
+                actionsQueue: [],
+
+                addEvent: function (cb) {
+                    this.actionsQueue.push(cb);
+                },
+
+                executeAll: function () {
+                    this.actionsQueue.forEach(cb => {
+                        cb();
+                    })
+                },
+            },
+        },
 
         modalSettings: modalSettings,
 
@@ -16,21 +50,21 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
             buttonOpenModal: document.getElementById('settings-button'),
             rootBackground: document.querySelector('#root')
         },
-        
+
         defaultSettings: new TemplateSettingObj(['gray', '#858585', 'Color'], true, 0),
         currentSettings: new TemplateSettingObj(),
         loadedSettings: {},
 
         createdDOM: {},
 
-        createModal: function() {
+        createModal: function () {
             const modalWindow = document.createElement('dialog');
             modalWindow.id = 'settings-modal';
 
             const buttonClose = document.createElement('button');
             buttonClose.innerHTML = '&#x2715;';
             buttonClose.id = 'settings-modal__close';
-            
+
             const title = document.createElement('span');
             title.textContent = 'Settings';
 
@@ -45,22 +79,29 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
             this.createdDOM.modalWindow = modalWindow;
         },
 
-        controlModal: function() {
+        controlModal: function () {
             this.createModal();
 
             this.elementsHtml.buttonOpenModal.addEventListener('click', () => {
+                // fix bug with spacebar after clicking button
+                this.elementsHtml.buttonOpenModal.blur();
+                
                 this.createdDOM.modalWindow.showModal();
+                this.event.open.executeAll();
             })
 
             const buttonClose = this.createdDOM.modalWindow.querySelector('#settings-modal__close');
-                
             buttonClose.addEventListener('click', () => {
+                // fix bug with spacebar after clicking button
+                buttonClose.blur();
+
                 this.createdDOM.modalWindow.close();
+                this.event.close.executeAll();
                 this.getValueSettings();
             })
         },
 
-        renderSettingsElements: function() {
+        renderSettingsElements: function () {
 
             const settings = Object.keys(modalSettings);
 
@@ -77,7 +118,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
                 const inputsControls = document.createElement('div');
                 inputsControls.id = 'settings-modal__inputs';
 
-                if(modalSettings[setting].type === 'stepper') {
+                if (modalSettings[setting].type === 'stepper') {
                     const prevInput = document.createElement('button');
                     prevInput.classList.add('change-setting-input');
                     prevInput.setAttribute('data-type', modalSettings[setting].label);
@@ -88,7 +129,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
                     const currentValue = document.createElement('span');
                     currentValue.id = 'settings-modal__current-value';
                     this.createdDOM[modalSettings[setting].label] = currentValue;
-                    
+
                     const nextInput = document.createElement('button');
                     nextInput.classList.add('change-setting-input');
                     nextInput.setAttribute('data-type', modalSettings[setting].label);
@@ -97,9 +138,9 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
                     this.createdDOM[`${nextInput.getAttribute('data-type')}_${nextInput.getAttribute('data-stepper')}`] = nextInput;
 
                     inputsControls.append(prevInput, currentValue, nextInput);
-                } 
+                }
 
-                if(modalSettings[setting].type === 'toggle') {
+                if (modalSettings[setting].type === 'toggle') {
                     const toggle = document.createElement('input');
                     toggle.id = 'settings-modal__' + modalSettings[setting].label + 'toggle';
                     toggle.setAttribute('type', 'checkbox');
@@ -108,7 +149,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
                     const labelToggle = document.createElement('label');
                     labelToggle.textContent = 'State';
                     labelToggle.setAttribute('for', toggle.id);
-                    
+
 
                     inputsControls.append(labelToggle, toggle);
                 }
@@ -126,19 +167,19 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
             this.createdDOM.modalWindow.append(buttonSaveSettings);
         },
 
-        setDefaultValues: function() {
+        setDefaultValues: function () {
 
-            if(!localStorage.getItem('settings') || !JSON.parse(localStorage.getItem('settings')).Background){
-                
+            if (!localStorage.getItem('settings') || !JSON.parse(localStorage.getItem('settings')).Background) {
+
                 for (const [key, value] of Object.entries(this.createdDOM)) {
-                    if(Object.hasOwn(this.defaultSettings, key)) {
-                        
-                        if(typeof this.defaultSettings[key] === 'boolean'){
+                    if (Object.hasOwn(this.defaultSettings, key)) {
+
+                        if (typeof this.defaultSettings[key] === 'boolean') {
                             value.checked = this.defaultSettings[key];
                         } else {
                             value.textContent = this.defaultSettings[key];
                         }
-                        
+
                     }
                 }
 
@@ -148,33 +189,33 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
         },
 
         getValueSettings: function () {
-            jsonSettings = JSON.parse(localStorage.getItem('settings'));
+            const jsonSettings = JSON.parse(localStorage.getItem('settings'));
             this.loadedSettings = jsonSettings;
-            
+
             for (const [key, value] of Object.entries(jsonSettings)) {
-                if(key === 'Sound'){
+                if (key === 'Sound') {
                     this.createdDOM[key].checked = value;
                 }
 
-                if(key === 'Background'){
-                    if(value[2] === 'Color'){
+                if (key === 'Background') {
+                    if (value[2] === 'Color') {
                         this.createdDOM.Color.textContent = value[0];
                         this.createdDOM.Image.textContent = Object.entries(backgroundImages)[0][0];
                     }
-                    if(value[2] === 'Image'){
+                    if (value[2] === 'Image') {
                         this.createdDOM.Image.textContent = value[0];
                         this.createdDOM.Color.textContent = Object.entries(backgroundColors)[0][0];
                     }
                 }
 
-                if(key === 'Music'){
+                if (key === 'Music') {
                     this.createdDOM[key].textContent = value;
                 }
-            }            
+            }
 
             this.setBackground();
             this.selectValueSetting(backgroundColors, backgroundImages);
-        }, 
+        },
 
         /**
          * 
@@ -182,35 +223,35 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
          * @param {string} localValue background value
          */
 
-        setBackground: function(type, localValue) {
-            jsonSettings = JSON.parse(localStorage.getItem('settings'));
+        setBackground: function (type, localValue) {
+            const jsonSettings = JSON.parse(localStorage.getItem('settings'));
 
-            if(jsonSettings.Background){
-                if(jsonSettings.Background[2] === 'Color'){
+            if (jsonSettings.Background) {
+                if (jsonSettings.Background[2] === 'Color') {
                     this.elementsHtml.rootBackground.style.removeProperty('background-image');
-                   this.elementsHtml.rootBackground.style.backgroundColor = jsonSettings.Background[1]; 
+                    this.elementsHtml.rootBackground.style.backgroundColor = jsonSettings.Background[1];
                 }
-                if(jsonSettings.Background[2] === 'Image'){
+                if (jsonSettings.Background[2] === 'Image') {
                     this.elementsHtml.rootBackground.style.removeProperty('background-color');
                     this.elementsHtml.rootBackground.style.backgroundImage = `url(/resources/images/${jsonSettings.Background[1]})`;
                 }
             }
 
-            if(type === 'color'){
+            if (type === 'color') {
                 this.elementsHtml.rootBackground.style.removeProperty('background-image');
                 this.elementsHtml.rootBackground.style.backgroundColor = localValue;
             }
-            if(type === 'image'){
+            if (type === 'image') {
                 this.elementsHtml.rootBackground.style.removeProperty('background-color');
                 this.elementsHtml.rootBackground.style.backgroundImage = `url(resources/images/${localValue})`;
             }
         },
 
-        setMusic: function() {
+        setMusic: function () {
 
         },
 
-        controlSound: function() {
+        controlSound: function () {
 
         },
 
@@ -222,21 +263,21 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
          * @param {array} array array with colors or images
          */
 
-        changeStateButton: function(left, right, idValue, array) {
-            if(idValue === 0){
+        changeStateButton: function (left, right, idValue, array) {
+            if (idValue === 0) {
                 left.disabled = true;
-            } 
-            if(idValue > 0) {
+            }
+            if (idValue > 0) {
                 left.disabled = false;
             }
 
-            if(idValue === array.length - 1){
+            if (idValue === array.length - 1) {
                 right.disabled = true;
-            } 
-            if(idValue < array.length - 1) {
+            }
+            if (idValue < array.length - 1) {
                 right.disabled = false;
             }
-        }, 
+        },
 
         /**
          * 
@@ -244,7 +285,7 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
          * @param {object} images object with background images
          */
 
-        selectValueSetting: function(colors, images) {
+        selectValueSetting: function (colors, images) {
 
             const colorArray = Object.entries(colors);
             const imageArray = Object.entries(images);
@@ -254,16 +295,16 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
             let imageID = 0;
             let musicID = 0;
 
-            
-            if(this.loadedSettings.Background){
+
+            if (this.loadedSettings.Background) {
                 for (const key of colorArray) {
-                    if(key[0] === this.loadedSettings.Background[0]) {
+                    if (key[0] === this.loadedSettings.Background[0]) {
                         colorID = colorArray.indexOf(key);
                     }
                 }
-    
+
                 for (const key of imageArray) {
-                    if(key[0] === this.loadedSettings.Background[0]) {
+                    if (key[0] === this.loadedSettings.Background[0]) {
                         imageID = imageArray.indexOf(key);
                     }
                 }
@@ -271,61 +312,64 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
 
             this.changeStateButton(this.createdDOM.Color_left, this.createdDOM.Color_right, colorID, colorArray);
             this.changeStateButton(this.createdDOM.Image_left, this.createdDOM.Image_right, imageID, imageArray);
-            
+
             this.createdDOM.modalWindow.addEventListener('click', event => {
+                // fix bug with spacebar after clicking button
+                this.createdDOM.modalWindow.blur();
+                
+                if (event.target.getAttribute('data-type') === 'Color') {
 
-                    if(event.target.getAttribute('data-type') === 'Color'){
-
-                        if(event.target.getAttribute('data-stepper') === 'left' && colorID > 0){
-                            colorID--;
-                            this.setBackground('color', colorArray[colorID][1]);
-                            this.changeStateButton(this.createdDOM.Color_left, this.createdDOM.Color_right, colorID, colorArray);
-                        }
-
-                        if(event.target.getAttribute('data-stepper') === 'right' && colorID < colorArray.length - 1){
-                            colorID++;
-                            this.setBackground('color', colorArray[colorID][1]);
-                            this.changeStateButton(this.createdDOM.Color_left, this.createdDOM.Color_right, colorID, colorArray);
-                        }
-
-                        this.createdDOM.Color.textContent = colorArray[colorID][0];
-                        selectedBackground = [colorArray[colorID][0], colorArray[colorID][1], event.target.getAttribute('data-type')];
+                    if (event.target.getAttribute('data-stepper') === 'left' && colorID > 0) {
+                        colorID--;
+                        this.setBackground('color', colorArray[colorID][1]);
+                        this.changeStateButton(this.createdDOM.Color_left, this.createdDOM.Color_right, colorID, colorArray);
                     }
 
-                    if(event.target.getAttribute('data-type') === 'Image'){
-
-                        if(event.target.getAttribute('data-stepper') === 'left' && imageID > 0){
-                            imageID--;
-                            this.setBackground('image', imageArray[imageID][1]);
-                            this.changeStateButton(this.createdDOM.Image_left, this.createdDOM.Image_right, imageID, imageArray);
-                        }
-
-                        if(event.target.getAttribute('data-stepper') === 'right' && imageID < imageArray.length - 1){
-                            imageID++;
-                            this.setBackground('image', imageArray[imageID][1]);
-                            this.changeStateButton(this.createdDOM.Image_left, this.createdDOM.Image_right, imageID, imageArray);
-                        }
-
-                        this.createdDOM.Image.textContent = imageArray[imageID][0];
-                        selectedBackground = [imageArray[imageID][0], imageArray[imageID][1], event.target.getAttribute('data-type')]
+                    if (event.target.getAttribute('data-stepper') === 'right' && colorID < colorArray.length - 1) {
+                        colorID++;
+                        this.setBackground('color', colorArray[colorID][1]);
+                        this.changeStateButton(this.createdDOM.Color_left, this.createdDOM.Color_right, colorID, colorArray);
                     }
 
-                    if(event.target.getAttribute('data-type') === 'Music'){
-                        
-                        if(event.target.getAttribute('data-stepper') === 'left'){
-                            musicID--;
-                        }
+                    this.createdDOM.Color.textContent = colorArray[colorID][0];
+                    selectedBackground = [colorArray[colorID][0], colorArray[colorID][1], event.target.getAttribute('data-type')];
+                }
 
-                        if(event.target.getAttribute('data-stepper') === 'right'){
-                            musicID++;
-                        }
+                if (event.target.getAttribute('data-type') === 'Image') {
 
+                    if (event.target.getAttribute('data-stepper') === 'left' && imageID > 0) {
+                        imageID--;
+                        this.setBackground('image', imageArray[imageID][1]);
+                        this.changeStateButton(this.createdDOM.Image_left, this.createdDOM.Image_right, imageID, imageArray);
                     }
 
-                    if(event.target === this.createdDOM.saveButton){
-                        this.saveValueSettings(selectedBackground, this.createdDOM.Sound.value, musicID);
-                        this.createdDOM.modalWindow.close();
+                    if (event.target.getAttribute('data-stepper') === 'right' && imageID < imageArray.length - 1) {
+                        imageID++;
+                        this.setBackground('image', imageArray[imageID][1]);
+                        this.changeStateButton(this.createdDOM.Image_left, this.createdDOM.Image_right, imageID, imageArray);
                     }
+
+                    this.createdDOM.Image.textContent = imageArray[imageID][0];
+                    selectedBackground = [imageArray[imageID][0], imageArray[imageID][1], event.target.getAttribute('data-type')]
+                }
+
+                if (event.target.getAttribute('data-type') === 'Music') {
+
+                    if (event.target.getAttribute('data-stepper') === 'left') {
+                        musicID--;
+                    }
+
+                    if (event.target.getAttribute('data-stepper') === 'right') {
+                        musicID++;
+                    }
+
+                }
+
+                if (event.target === this.createdDOM.saveButton) {
+                    this.saveValueSettings(selectedBackground, this.createdDOM.Sound.value, musicID);
+                    this.createdDOM.modalWindow.close();
+                    this.event.close.executeAll();
+                }
             })
         },
 
@@ -336,14 +380,14 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
          * @param {array} music background music
          */
 
-        saveValueSettings: function(background, sound, music) {
-            
+        saveValueSettings: function (background, sound, music) {
+
             this.currentSettings = new TemplateSettingObj(background, sound, music);
 
             localStorage.setItem('settings', JSON.stringify(this.currentSettings));
         },
 
-        init: function() {
+        init: function () {
             this.controlModal();
             this.renderSettingsElements();
             this.setDefaultValues();
@@ -351,3 +395,5 @@ const CreateSettingsModal = function(modalSettings, backgroundColors, background
         }
     }
 }
+
+export { CreateSettingsModal };

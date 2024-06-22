@@ -1,10 +1,16 @@
 console.log('[Log]: Starting settings.js');
 
+import { CreateSettingsModal } from "../modal.js";
+
 const Settings = function () {
 
     return {
         // speed of figure moving to bottom
         gravity: 0.1,
+
+        html: null,
+
+        // TODO: refactor
         modal: {
             // change background color on website
             changeBackgroundColor: {
@@ -53,57 +59,12 @@ const Settings = function () {
             city: 'city.jpg'
         },
 
-        // speed of figure moving to bottom
-        gravity: 0.1,
-
         renderUISettings: function(){
-            
             const modal = new CreateSettingsModal(this.modal, this.colors, this.images);
+
+            this.html = modal;
+
             modal.init();
-
-        },
-        // Storing some props for dev & debugging purposes
-        dev: {
-            // globally turn on or off dev mode
-            __devMode: {
-                type: 'toggle',
-                label: 'dev mode',
-                state: true,
-            },
-
-            __disableGravity: {
-                type: 'toggle',
-                label: 'disable gravity',
-                state: false,
-            },
-
-            // draw dot to figure center
-            __renderFigureCenter: {
-                type: 'toggle',
-                label: 'render figure center',
-                state: false,
-            },
-
-            __renderHighestLine: {
-                type: 'toggle',
-                label: 'render highest line',
-                state: true,
-            },
-
-            __drawFieldGrid: {
-                type: 'toggle',
-                label: 'render field grid',
-                state: true,
-            },
-
-            __spawnFigure: {
-                type: 'button-list',
-                label: 'spawn figure',
-                list: ['i', 'j', 'l', 'o', 't', 's', 'z'],
-
-                // prop that stores cb function
-                execute: null,
-            },
         },
 
         themes: {
@@ -121,9 +82,18 @@ const Settings = function () {
                 },
             }
         },
+
+        on: function(eventName, callback){
+            if(eventName == 'open' || eventName == 'close'){
+                this.html.event[eventName].addEvent(callback);
+            }
+        },
+
         init: function () {
             console.log('[Log]: initializing Settings');
             this.renderUISettings();
         },
     }
 };
+
+export { Settings };

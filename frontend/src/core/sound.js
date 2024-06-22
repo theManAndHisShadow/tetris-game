@@ -124,3 +124,5 @@ const SoundComposer = function(){
         }
     }
 };
+
+export { SoundComposer };
