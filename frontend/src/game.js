@@ -40,9 +40,6 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
             context: screen.canvas.getContext("2d"),
         });
 
-        // deprecated
-        // const settings = new Settings();
-
         const hud = new HUD({parentScreen: screenElement});
 
         /**
@@ -80,9 +77,6 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 }
             }
         }
-
-        // deprecated
-        // const dev_ui = new DevUI(settings.dev);
 
         const controls = new Controls({target: screen});
 
@@ -355,12 +349,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                     c: this.settings.themes.night.fieldColor,
                 })
 
-                // deprecated
-                // if(this.devSettings.data.drawFieldGrid.state === true) {
-                //     __drawFieldGrid(this.field);
-                // }
-
-                //temp
+                //TODO: fix this
                 __drawFieldGrid(this.field, this.settings.themes.night.gridColor);
 
                 // nextFigures
@@ -524,30 +513,17 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
             init: function(){
                 console.log('[Log]: initializing Game');
 
-                // TODO: remove this?
-                // fix for setInterval block
-                let self = this;
-
-                // deprecated
-                // init settings module
-                // settings.init();
-
-                // deprecated
-                //dev_ui.init();
-
-                hud.init(fpsInterval);
-
-                // deprecated
-                // binding a settings object to a global variable
-                // this.settings = settings;
-
                 // init controls module
                 controls.init();
 
+                // init sound system
                 soundComposer.init();
 
                 // generating initial queue of random figures
                 this.generateQueue(3);
+
+                // init game hud
+                hud.init(fpsInterval);
 
                 // create and add player figure
                 let player = this.spawnFigure();
@@ -559,6 +535,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 // update gravity impact at target figure
                 setInterval(this.gravitize.bind(this), 90 / this.settings.gravity);
 
+                // TODO: fix this
                 // deprecated
                 // manual fugire spawn
                 // dev_ui.devSettings.__spawnFigure.execute = (data) => {
@@ -567,6 +544,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 //     this.player = this.spawnFigure(data);
                 // };
                 
+                // TODO: fix this
                 // some panel theming
                 // if(dev_ui.devSettings.__devMode.state === true) {
                 //     let devPanel = document.querySelector('#dev-panel');

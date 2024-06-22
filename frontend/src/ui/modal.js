@@ -8,8 +8,11 @@ const TemplateSettingObj = function (background, turn, music) {
 const CreateSettingsModal = function (modalSettings, backgroundColors, backgroundImages) {
 
     return {
+        // pseudo event system
         event: {
             open: {
+                // storing all handler functions in array
+                // after that invoking all of them in .executeAll();
                 actionsQueue: [],
 
                 addEvent: function (cb) {
@@ -24,6 +27,8 @@ const CreateSettingsModal = function (modalSettings, backgroundColors, backgroun
             },
 
             close: {
+                // storing all handler functions in array
+                // after that invoking all of them in .executeAll();
                 actionsQueue: [],
 
                 addEvent: function (cb) {
@@ -77,7 +82,6 @@ const CreateSettingsModal = function (modalSettings, backgroundColors, backgroun
         controlModal: function () {
             this.createModal();
 
-            // Deprecated
             this.elementsHtml.buttonOpenModal.addEventListener('click', () => {
                 // fix bug with spacebar after clicking button
                 this.elementsHtml.buttonOpenModal.blur();
@@ -87,7 +91,6 @@ const CreateSettingsModal = function (modalSettings, backgroundColors, backgroun
             })
 
             const buttonClose = this.createdDOM.modalWindow.querySelector('#settings-modal__close');
-
             buttonClose.addEventListener('click', () => {
                 // fix bug with spacebar after clicking button
                 buttonClose.blur();
