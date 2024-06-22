@@ -484,19 +484,36 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 }
             },
 
+
+
+            /**
+             * Pauses game process, antipod of Game.resume()
+             */
             pause: function(){
                 this.states.isGamePaused = true;
-                console.log(this.screen.html);
+
                 this.screen.html.classList.add('opacity-60');
                 console.log("[Game]: Current instance of game is paused");
             },
 
+
+
+            /**
+             * Resumes game process, antipod of Game.pause()
+             */
             resume: function(){
                 this.states.isGamePaused = false;
+
                 this.screen.html.classList.remove('opacity-60');
                 console.log("[Game]: Current instance of game is resumed");
             },
 
+
+
+            /**
+             * 
+             * @returns 
+             */
             checkMovability: function(){
                 let condition_1 = this.states.isGamePaused === false;
                 let condition_2 = this.states.isGameOver === false;
@@ -505,6 +522,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
 
                 return movementIsAllowed;
             },
+
 
 
             /**
