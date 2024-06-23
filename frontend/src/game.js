@@ -590,6 +590,8 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                             }
                         });
 
+                        this.sounds.play('sfx', 'rotate', -0.7);
+
                         // Rotating figure by pressing w/UpArrow
                         this.playerProjection.syncPosition();
                     }

@@ -69,6 +69,12 @@ const SoundComposer = function(){
 
             this.loadFile({
                 type: 'sfx',
+                name: 'rotate',
+                path: "/resources/sounds/sfx__rotate.mp3",
+            });
+
+            this.loadFile({
+                type: 'sfx',
                 name: 'drop',
                 path: "/resources/sounds/sfx__drop.mp3",
             });
