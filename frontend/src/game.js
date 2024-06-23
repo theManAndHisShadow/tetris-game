@@ -463,7 +463,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
              */
             gravitize: function(){
                 let condition = this.devSettings.getValue('disableGravity') === false;
-                let gravitizeIsAllowed = condition && this.checkMovability();
+                let gravitizeIsAllowed = condition && this.checkMobility();
 
                 // check result condition
                 if(gravitizeIsAllowed){
@@ -580,7 +580,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
              * 
              * @returns 
              */
-            checkMovability: function(){
+            checkMobility: function(){
                 let condition_1 = this.states.isGamePaused === false;
                 let condition_2 = this.states.isGameOver === false;
 
@@ -650,7 +650,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 controls.on('up', () => {
                     let direction = 'up';
 
-                    if(this.checkMovability()) {
+                    if(this.checkMobility()) {
                         // Rotating figure by pressing w/UpArrow
                         this.player.rotate({
                             // if fugure done full rotation
@@ -670,7 +670,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 controls.on('left', () => {
                     let direction = 'left';
                     
-                    if(this.checkMovability()){
+                    if(this.checkMobility()){
                         // Moving figure to left by pressing a/LeftArrow
                         this.player.move({
                             direction: direction,
@@ -709,7 +709,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 controls.on('right', () => {
                     let direction = 'right';
 
-                    if(this.checkMovability()){
+                    if(this.checkMobility()){
                         // Moving figure to left by pressing d/RightArrow
                         this.player.move({
                             direction: direction,
@@ -749,7 +749,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 controls.on('down', () => {
                     let direction = 'down';
 
-                    if(this.checkMovability()) {
+                    if(this.checkMobility()) {
                         // Moving figure to down by pressing s/DownArrow
                         this.player.move({
                             direction: direction,
@@ -779,7 +779,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 });
                 
                 controls.on('space', () => {
-                    if(this.checkMovability()) {
+                    if(this.checkMobility()) {
                         // at space key fast move figure to down
                         if(this.player.isFreezed == false){
                             this.player.moveDownUntilCollide({
