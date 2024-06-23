@@ -18,6 +18,14 @@ const data = {
                 },
 
                 {
+                    id: 'printGameFieldFiguresToConsole',
+                    type: 'button',
+                    label: "print 'Game.field.figures' to console",
+
+                    execute: null,
+                },
+
+                {
                     id: 'renderFieldGrid',
                     type: 'toggle',
                     label: 'render field grid',

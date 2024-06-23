@@ -85,6 +85,46 @@ const DevHelper = function({rootElement}){
             return optionContainer;
         },
 
+        /**
+         * Creates and return toggle button
+         * @param {object} object dev panel object (label, state, type etc)
+         * @returns {HTMLElement}
+         */
+        renderButton: function(object){
+            // storing some values
+            let optionTitle__text = object.label
+
+            // create container element
+            let optionContainer = document.createElement('div');
+            optionContainer.id = 'dev-panel' + object.id + "-option-container";
+            
+            // create option label element
+            let optionTitle = document.createElement('span');
+            optionTitle.id =  'dev-panel' + object.id + "-option-label";
+            optionTitle.innerText = optionTitle__text + ": ";
+
+            // create toggle button element
+            let optionButton = document.createElement('button');
+            optionButton.id = 'dev-panel' + object.id + "-option-" + object.type;
+            optionButton.classList = 'button';
+            optionButton.innerHTML = 'print';
+
+            // adding handler to update toggle button state and visula at click
+            optionButton.addEventListener('click', (e) => {
+                if(typeof object.execute == 'function') {
+                    object.execute()
+                } else {
+                    console.log('[Log]: DevTool option ' + object.id + ' has empty handler');
+                }
+            });
+
+            // adding to container
+            optionContainer.appendChild(optionTitle);
+            optionContainer.appendChild(optionButton);
+
+            return optionContainer;
+        },
+
 
 
         /**
@@ -151,6 +191,7 @@ const DevHelper = function({rootElement}){
                 options.forEach(option => {
                     let optionContainer;
 
+                    if(option.type == 'button') optionContainer = this.renderButton(option);
                     if(option.type == 'toggle') optionContainer = this.renderToggle(option);
                     if(option.type == 'button-list') optionContainer = this.renderButtonList(option);
 
