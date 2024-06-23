@@ -138,11 +138,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
 
                 const figure = new Figure({
                     parent: parent,
-                    siblings: this.field.figures.filter(figure => {
-                        if(figure.id !== this.id) {
-                            return figure;
-                        }
-                    }),
+                    siblings: [],
                     
                     id: id,
                     cx: cx, 
@@ -155,6 +151,69 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
 
                 return figure;
             },
+
+
+
+            /**
+             * Updates 'figure.siblings' array
+             */
+            updateFieldSiblingsInfo: function(){
+                // Save to field figure 'siblings' refs to other figures
+                this.field.figures.forEach(fieldItem => {
+                    let siblings = [...this.field.figures].filter(figure => {
+                        // If the identifiers are different, this means that...
+                        // ...the figures are different, which means we add siblings to the array
+                        if(figure.id !== fieldItem.id) return figure;
+                    });
+
+                    // link new updated sibling array to field figure 'siblings' prop
+                    fieldItem.siblings = siblings;
+                });
+            },
+
+
+
+            /**
+             * Adds figure object into field figures array
+             * @param {object} figureObject figure to add
+             */
+            addFigureToField: function(figureObject){
+                this.field.figures.push(figureObject);
+
+                // TODO: check is do it really worth it?
+                // after field figures array was changing - update all field items siblings info
+                this.updateFieldSiblingsInfo();
+            },
+
+
+
+            /**
+             * Removes figure from field figures array
+            * @param {object} figureObject figure to delete
+            */
+            removeFigureFromField: function(figureObject){
+                let index = this.field.figures.indexOf(figureObject);
+                this.field.figures.splice(index, 1);
+
+                // after field figures array was changing - update all field items siblings info
+                this.updateFieldSiblingsInfo(this.field.figures);
+            },
+
+
+
+            /**
+             * Checks is taget figure's blocks array is emmpty
+             * and if is true - removes figure from field array
+             * @param {*} targetFigure 
+             */
+            checkIsGarbage: function(targetFigure){
+                if(targetFigure.blocks.length == 0) {
+                    console.log('[Log]: removing figure beacuse it has no blocks, figure -', targetFigure);
+                    this.removeFigureFromField(targetFigure);
+                }
+            },
+            
+
 
             createProjectionFor: function(figure){
                 const projection = new FigureProjection(figure);
@@ -177,6 +236,9 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
 
                     // check all field figures...
                     this.field.figures.forEach(figure => {
+                        // check is figure has no blocks and if true - removes it
+                        this.checkIsGarbage(figure);
+
                        //...but only freezed figures...
                         if (figure.isFreezed === true) {
                              //... and their blocks, 
@@ -401,7 +463,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
              */
             gravitize: function(){
                 let condition = this.devSettings.getValue('disableGravity') === false;
-                let gravitizeIsAllowed = condition && this.checkMovability();
+                let gravitizeIsAllowed = condition && this.checkMobility();
 
                 // check result condition
                 if(gravitizeIsAllowed){
@@ -463,7 +525,8 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                         shape: shape,
                     });
 
-                    this.field.figures.push(figure);
+                    this.addFigureToField(figure);
+
                     console.log('Added new figure: ', figure);
 
                     figure.isFalling = true;
@@ -517,7 +580,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
              * 
              * @returns 
              */
-            checkMovability: function(){
+            checkMobility: function(){
                 let condition_1 = this.states.isGamePaused === false;
                 let condition_2 = this.states.isGameOver === false;
 
@@ -562,6 +625,15 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                     this.player = null;
                     this.player = this.spawnFigure(data);
                 };
+
+
+                // manual print info about field figures array to console
+                this.devSettings.getOption('printGameFieldFiguresToConsole').execute = (data) => {
+                    console.log(
+                        "[Log]: executed DevTool 'printGameFieldFiguresToConsole' option handler", 
+                        this.field.figures
+                    );
+                };
                 
                 // some panel theming
                 if(this.devSettings.getValue('devMode') === true) {
@@ -578,7 +650,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 controls.on('up', () => {
                     let direction = 'up';
 
-                    if(this.checkMovability()) {
+                    if(this.checkMobility()) {
                         // Rotating figure by pressing w/UpArrow
                         this.player.rotate({
                             // if fugure done full rotation
@@ -598,7 +670,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 controls.on('left', () => {
                     let direction = 'left';
                     
-                    if(this.checkMovability()){
+                    if(this.checkMobility()){
                         // Moving figure to left by pressing a/LeftArrow
                         this.player.move({
                             direction: direction,
@@ -637,7 +709,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 controls.on('right', () => {
                     let direction = 'right';
 
-                    if(this.checkMovability()){
+                    if(this.checkMobility()){
                         // Moving figure to left by pressing d/RightArrow
                         this.player.move({
                             direction: direction,
@@ -677,7 +749,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 controls.on('down', () => {
                     let direction = 'down';
 
-                    if(this.checkMovability()) {
+                    if(this.checkMobility()) {
                         // Moving figure to down by pressing s/DownArrow
                         this.player.move({
                             direction: direction,
@@ -707,7 +779,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 });
                 
                 controls.on('space', () => {
-                    if(this.checkMovability()) {
+                    if(this.checkMobility()) {
                         // at space key fast move figure to down
                         if(this.player.isFreezed == false){
                             this.player.moveDownUntilCollide({
