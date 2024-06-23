@@ -69,7 +69,7 @@ const Settings = function () {
 
         themes: {
             night: {
-                fieldColor: 'black',
+                fieldColor: '#00000000',
                 gridColor: '#1c202f',
                 figures: {
                     i: '#f94144',

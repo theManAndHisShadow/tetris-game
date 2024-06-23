@@ -16,6 +16,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
 
     if(screenElement){
         // creating game canvas
+        const bufferSpace = 50;
         let nextFiguresWidth = 85;
         let nextFiguresHeight = 185;
         let fieldWidth = fieldSize[0] * gridCellSize;
@@ -30,7 +31,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
         });
 
         // setting canvas based on fieldSize and gridCellSize (in pixels)
-        canvas.width = fieldWidth + nextFiguresWidth;
+        canvas.width = fieldWidth + nextFiguresWidth + bufferSpace;
         canvas.height = fieldHeight;
 
         // start point counting figure IDs

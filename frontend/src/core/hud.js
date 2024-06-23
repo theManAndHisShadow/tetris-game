@@ -4,7 +4,6 @@ import { addLeadingZero } from "../misc/helpers.js";
 
 const HUD = function({parentScreen} = {}){
     return {
-
         scores: {
             html: null,
             value: 0,
@@ -138,10 +137,14 @@ const HUD = function({parentScreen} = {}){
         parentScreen: parentScreen,
 
         render: function(){
-            this.scores.renderAt(this.parentScreen);
-            this.figures.renderAt(this.parentScreen);
-            this.lines.renderAt(this.parentScreen);
-            this.stopwatch.renderAt(this.parentScreen);
+            let HUDdataDisplay = document.createElement('div');
+            HUDdataDisplay.id = 'hud-container';
+            this.parentScreen.appendChild(HUDdataDisplay);
+
+            this.scores.renderAt(HUDdataDisplay);
+            this.figures.renderAt(HUDdataDisplay);
+            this.lines.renderAt(HUDdataDisplay);
+            this.stopwatch.renderAt(HUDdataDisplay);
         },
 
         init: function(fps){
