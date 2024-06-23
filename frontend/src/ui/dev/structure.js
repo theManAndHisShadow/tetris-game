@@ -6,13 +6,13 @@ const data = {
                 {
                     id: 'devMode',
                     label: 'dev mode',
-                    type: 'toggle',
+                    type: 'checkbox',
                     state: true,
                 },
 
                 {
                     id: 'disableGravity',
-                    type: 'toggle',
+                    type: 'checkbox',
                     label: 'disable gravity',
                     state: false,
                 },
@@ -27,14 +27,14 @@ const data = {
 
                 {
                     id: 'renderFieldGrid',
-                    type: 'toggle',
+                    type: 'checkbox',
                     label: 'render field grid',
                     state: true,
                 },
 
                 {
                     id: 'renderFigureCenter',
-                    type: 'toggle',
+                    type: 'checkbox',
                     label: 'render figure center',
                     state: false,
                 },

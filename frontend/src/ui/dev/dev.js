@@ -39,15 +39,18 @@ const DevHelper = function({rootElement}){
          * @param {object} object dev panel object (label, state, type etc)
          * @returns {HTMLElement}
          */
-        renderToggle: function(object){
+        renderCheckbox: function(object){
             /**
              * 
              * @param {HTMLButtonElement} target which button should get an appearance update 
              * @param {boolean} state new state 
              */
             function __updateVisual(target, state){
-                target.setAttribute("data-toggle-state", state);
-                target.innerHTML = `${state}`;
+                if(state === true) {
+                    target.setAttribute('checked', '');
+                } else {
+                    target.removeAttribute('ckecked');
+                }
             }
 
             // storing some values
@@ -63,24 +66,25 @@ const DevHelper = function({rootElement}){
             optionTitle.id =  'dev-panel' + object.id + "-option-label";
             optionTitle.innerText = optionTitle__text + ": ";
 
-            // create toggle button element
-            let optionToggle = document.createElement('button');
-            optionToggle.id = 'dev-panel' + object.id + "-option-" + object.type;
-            optionToggle.classList.add('toggle');
-            optionToggle.innerHTML = optionValue;
+            // create checkbox button element
+            let optionCheckbox = document.createElement('input');
+            optionCheckbox.type = 'checkbox';
+            optionCheckbox.id = 'dev-panel' + object.id + "-option-" + object.type;
+            optionCheckbox.classList = 'checkbox'
+            optionCheckbox.innerHTML = optionValue;
 
             // update toggle button state
-            __updateVisual(optionToggle, object.state);
+            __updateVisual(optionCheckbox, object.state);
 
             // adding handler to update toggle button state and visula at click
-            optionToggle.addEventListener('click', (e) => {
+            optionCheckbox.addEventListener('click', (e) => {
                 object.state = object.state == true ? false : true;
-                __updateVisual(optionToggle, object.state);
+                __updateVisual(optionCheckbox, object.state);
             });
 
             // adding to container
             optionContainer.appendChild(optionTitle);
-            optionContainer.appendChild(optionToggle);
+            optionContainer.appendChild(optionCheckbox);
 
             return optionContainer;
         },
@@ -192,7 +196,7 @@ const DevHelper = function({rootElement}){
                     let optionContainer;
 
                     if(option.type == 'button') optionContainer = this.renderButton(option);
-                    if(option.type == 'toggle') optionContainer = this.renderToggle(option);
+                    if(option.type == 'checkbox') optionContainer = this.renderCheckbox(option);
                     if(option.type == 'button-list') optionContainer = this.renderButtonList(option);
 
                     this.html.rootNodeRef.appendChild(optionContainer);
