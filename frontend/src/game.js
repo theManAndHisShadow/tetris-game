@@ -10,7 +10,7 @@ import { SoundComposer } from './core/sound.js';
 import { HUD } from './core/hud.js';
 
 
-const Game = function({screenElement, fieldSize, gridCellSize, settings, devSettings}){    
+const Game = function({screenElement, fieldSize, gridCellSize, settings, devTool}){    
     gridCellSize = gridCellSize || 20;
     fieldSize = fieldSize || [10, 16];
 
@@ -88,7 +88,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
 
         return {
             settings: settings,
-            devSettings: devSettings,
+            devTool: devTool,
             
             screen: screen,
             player: null,
@@ -412,7 +412,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                     c: this.settings.themes.night.fieldColor,
                 })
 
-                if(this.devSettings.getValue('renderFieldGrid') === true) {
+                if(this.devTool.getValue('renderFieldGrid') === true) {
                     __drawFieldGrid(this.field, this.settings.themes.night.gridColor);
                 }
 
@@ -434,7 +434,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                     fieldItem.render();     
 
                     // fixing center point rendering 
-                    fieldItem.renderCenterPoint = this.devSettings.getValue('renderFigureCenter');
+                    fieldItem.renderCenterPoint = this.devTool.getValue('renderFigureCenter');
                 });
 
                 // updating stopwatch values
@@ -463,7 +463,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
              * @param {object} target target of gravity impact
              */
             gravitize: function(){
-                let condition = this.devSettings.getValue('disableGravity') === false;
+                let condition = this.devTool.getValue('disableGravity') === false;
                 let gravitizeIsAllowed = condition && this.checkMobility();
 
                 // check result condition
@@ -621,7 +621,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 setInterval(this.gravitize.bind(this), 90 / this.settings.gravity);
 
                 // manual fugire spawn
-                this.devSettings.getOption('spawnFigure').execute = (data) => {
+                this.devTool.getOption('spawnFigure').execute = (data) => {
                     this.field.figures = [];
                     this.player = null;
                     this.player = this.spawnFigure(data);
@@ -629,7 +629,7 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
 
 
                 // manual print info about field figures array to console
-                this.devSettings.getOption('printGameFieldFiguresToConsole').execute = (data) => {
+                this.devTool.getOption('printGameFieldFiguresToConsole').execute = (data) => {
                     console.log(
                         "[Log]: executed DevTool 'printGameFieldFiguresToConsole' option handler", 
                         this.field.figures
@@ -637,8 +637,8 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devSett
                 };
                 
                 // some panel theming
-                if(this.devSettings.getValue('devMode') === true) {
-                    let devPanel = this.devSettings.html.rootNodeRef;
+                if(this.devTool.getValue('devMode') === true) {
+                    let devPanel = this.devTool.html.rootNodeRef;
                     let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
                     console.log(devPanel);
 

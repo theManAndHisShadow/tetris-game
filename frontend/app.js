@@ -18,7 +18,7 @@ const tetris = new Game({
     gridCellSize: 23,
     fieldSize: [12, 21], 
     settings: settings,
-    devSettings: devTool,
+    devTool: devTool,
 });
 
 settings.on('open', () => {
