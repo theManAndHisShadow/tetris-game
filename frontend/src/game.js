@@ -62,18 +62,68 @@ const Game = function({screenElement, fieldSize, gridCellSize, settings, devTool
             const horizontal_amount = field.width / field.gridCellSize;
             const verical_amount = field.height / field.gridCellSize;
 
+            // thikness of grid line
+            const thickness = 1;
+
+            // offset for fixing grid line width (making it thinner)
+            const offset = 0.5;
+
+            //how many of field grid lines renders with gradient
+            const gradientSectionLines = Math.round(fieldSize[1] * 0.45);
+
+            // staring point for normal grid lines
+            const staringPoint = gridCellSize * gradientSectionLines;
+
+            // color of gradient colorStop
+            const color = '#14151b';
+
+            // coord for gradient
+            const y2 = (gradientSectionLines * gridCellSize) / 2;
+
             for(let h = 0; h <= horizontal_amount; h++){
                 for(let v = 0; v <= verical_amount; v++){
-                    renderer.drawLine({
-                        x1: gridCellSize * h, y1: 0,
-                        x2: gridCellSize * h, y2: field.height,
-                        c: linesColor, w: 2,
-                    });
+                    
+                    // if lines of 'gradient part'
+                    // draw some lines using drawGradientLine
+                    if(v > gradientSectionLines){
+                       // drawning vertical lines
+                        renderer.drawGradientLine({
+                            x1: gridCellSize * h + offset, y1: 0 + offset,
+                            x2: gridCellSize * h + offset, y2: staringPoint + offset,
+                            c: linesColor, w: thickness,
+                            colorStop1: color,
+                            colorStop2: linesColor,
+                            gradientCoords: {
+                                x1: 0, y1: 0, x2: 0, y2: y2,
+                            },
+                        });
 
+                        // drawning regular horizontal lines
+                        renderer.drawLine({
+                            x1: 0 + offset, y1: gridCellSize * v - offset,
+                            x2: field.width + offset, y2: gridCellSize * v - offset,
+                            c: linesColor, w: thickness,
+                        });
+                    } else {
+                        // drawning gradient horizontal lines
+                        renderer.drawGradientLine({
+                            x1: 0 + offset, y1: gridCellSize * v - offset,
+                            x2: field.width + offset, y2: gridCellSize * v - offset,
+                            w: thickness,
+                            colorStop1: color,
+                            colorStop2: linesColor,
+                            gradientCoords: {
+                                x1: 0, y1: 0, x2: 0, y2: y2,
+                            },
+                        });
+                    }
+                    
+
+                    // drawning regular vertical lines
                     renderer.drawLine({
-                        x1: 0, y1: gridCellSize * v,
-                        x2: field.width, y2: gridCellSize * v,
-                        c: linesColor, w: 1,
+                        x1: gridCellSize * h + offset, y1: staringPoint + offset,
+                        x2: gridCellSize * h + offset, y2: field.height + offset,
+                        c: linesColor, w: thickness,
                     });
                 }
             }
