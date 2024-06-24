@@ -1,17 +1,49 @@
 console.log('[Log]: Starting figure.js');
 
 import { rotatePoint } from "../misc/helpers.js";
+import { Texture } from "./texture.js";
 
-const Block = function({id, x, y, color, size, lineGroup, parentFigureID} = {}){
+const Block = function({id, x, y, color, size, renderer, parentFigureID, textureName} = {}){
+    // preparing texture
+    let blockTexture = new Texture({
+        renderer: renderer, 
+        width: size, 
+        height: size,
+        x: x,
+        y: y,
+    });
+
+    // preload texture file
+    blockTexture.load(`../../resources/images/textures/${textureName}`);
+
     return {
         id: id,
         x: x,
         y: y,
         color: color,
         size: size,
-        lineGroup: lineGroup,
         parentFigureID: parentFigureID,
 
+        renderer: renderer,
+        texture: blockTexture,
+        textureName: textureName,
+
+
+        
+        /**
+         * Render block using texture rendering method
+         */
+        render: function(){
+            this.texture.x = this.x;
+            this.texture.y = this.y;
+            this.texture.render();
+        },
+
+
+
+        /**
+         * @param {object} from Figure Object ref
+         */
         deleteFrom: function(from){
             from.forEach(figure => {
                 if(figure.id == this.parentFigureID) {
@@ -35,8 +67,9 @@ const Block = function({id, x, y, color, size, lineGroup, parentFigureID} = {}){
  * @param {CanvasRenderingContext2D} renderer 
  * @returns {object}
  */
-const Figure = function({id, parent, siblings, cx, cy, renderCenterPoint, color, size, shape, renderer} = {}){
+const Figure = function({id, parent, siblings, cx, cy, renderCenterPoint, textureName, color, size, shape, renderer} = {}){
     renderCenterPoint = renderCenterPoint || false;
+    textureName = textureName || `block__${shape}-gem.png`;
     /**
      * Internal helper function to get matrix of some blockicular shape.
      * @param {string} shape shape of figure, might be i, l, j, o, t, s, z
@@ -123,6 +156,8 @@ const Figure = function({id, parent, siblings, cx, cy, renderCenterPoint, color,
         // create empty array
         let blocks = [];
 
+        console.log(`block__${shapeLetter}-gem.png`);
+
         // loop through matrix 'slices' (rows)
         shape.matrix.forEach((slice, i) => {
             // now loop through each value of slice
@@ -136,8 +171,12 @@ const Figure = function({id, parent, siblings, cx, cy, renderCenterPoint, color,
                         y: cy + (size*i) - (size * shape.center[1]),
                         color: color,
                         size: size,
+                        renderer: renderer,
+                        parentFigureShape: shapeLetter,
+                        textureName: textureName,
 
                         parentFigureID: id,
+                        textureName: textureName,
                     });
 
                     blocks.push(newBlock);
@@ -192,8 +231,10 @@ const Figure = function({id, parent, siblings, cx, cy, renderCenterPoint, color,
         parent: parent,
         siblings: siblings,
 
-        size: size,
         color: color,
+        textureName: textureName,
+
+        size: size,
         shape: shape,
         shapeMatrix: __getShapeMatrix(shape),
         blocks: __generateFromMatrix(shape),
@@ -560,12 +601,15 @@ const Figure = function({id, parent, siblings, cx, cy, renderCenterPoint, color,
          */
         render: function(){
             this.blocks.forEach(singleBlock => {
-                this.renderer.drawSquare({
-                    x: singleBlock.x,
-                    y: singleBlock.y,
-                    w: size,
-                    c: this.color,
-                });
+                // deprecated
+                // this.renderer.drawSquare({
+                //     x: singleBlock.x,
+                //     y: singleBlock.y,
+                //     w: size,
+                //     c: this.color,
+                // });    
+
+                singleBlock.render();
             });
 
             if(this.renderCenterPoint === true){
@@ -594,6 +638,7 @@ const FigureProjection = function(projectionOf){
                 renderer: projectionOf.renderer,
                 parent: projectionOf.parent,
                 siblings: projectionOf.siblings,
+                textureName: 'block__projection-regular-gem.png',
             }),
         },
 
@@ -604,7 +649,9 @@ const FigureProjection = function(projectionOf){
          * Renders projection if figure
          */
         render: function(){
-            this.figure.projection.render();
+            this.figure.projection.blocks.forEach(singleBlock => {
+                singleBlock.render();
+            });
         },
 
 
