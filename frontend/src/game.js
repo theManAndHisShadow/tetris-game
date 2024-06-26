@@ -841,7 +841,6 @@ class Game {
                         }
 
                         if (collideWith == 'figure') {
-                            // figure.updateStyle('color', 'green');
                             figure.freeze();
                             this.setHighestLine(figure);
                             this.checkLineCompletitions();

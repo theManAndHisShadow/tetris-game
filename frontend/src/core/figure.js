@@ -541,22 +541,6 @@ class Figure {
 
 
 
-    updateStyle(styleProperty, newValue) {
-        let objectAllowedProprties = ['color', 'size'];
-
-        if (objectAllowedProprties.indexOf(styleProperty) > -1) {
-            this[styleProperty] = newValue;
-
-            this.blocks.forEach(block => {
-                block[styleProperty] = newValue;
-            });
-        } else {
-            throw new Error(`Figure 'updateStyle' function has bad argument. styleProperty = ${styleProperty}`);
-        }
-    }
-
-
-
     /**
      * Freezing figure, at freeze state object cant move
      */
