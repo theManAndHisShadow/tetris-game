@@ -46,4 +46,14 @@ function addLeadingZero(time){
   return corrected;
 }
 
-export { getRandomNumber, rotatePoint, addLeadingZero };
+
+/**
+ * Makes copy of class instance object with saving methods
+ * @param {Object} target 
+ * @returns {Object}
+ */
+function copyInstanceObject(target){
+  return  Object.assign(Object.create(Object.getPrototypeOf(target)), target);
+}
+
+export { getRandomNumber, rotatePoint, addLeadingZero, copyInstanceObject };
