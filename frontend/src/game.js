@@ -713,7 +713,7 @@ class Game {
 
         // some panel theming
         if (this.devTool.getValue('devMode') === true) {
-            let devPanel = this.devTool.html.rootNodeRef;
+            let devPanel = this.devTool.html;
             let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
 
             manualSpawnButtons.forEach(spawnButton => {

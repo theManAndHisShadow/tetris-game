@@ -8,7 +8,7 @@ const settings = new Settings();
 settings.init();
 
 const devTool = new DevHelper({
-    rootElement: document.querySelector('#root')
+    parentElement: document.querySelector('#root')
 });
 
 devTool.init();
