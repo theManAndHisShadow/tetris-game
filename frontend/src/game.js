@@ -54,7 +54,7 @@ class Game {
             const soundComposer = new SoundComposer();
 
             // preparing Constrols class instance
-            const hud = new HUD({ parentScreen: screenElement });
+            const hud = new HUD({ parentScreen: screenElement, fps: fps});
 
             this.fps = fps;
             this.fpsInterval = fpsInterval;
@@ -226,9 +226,9 @@ class Game {
 
 
     /**
-     * Updates 'figure.siblings' array
+     * updateValues 'figure.siblings' array
      */
-    updateFieldSiblingsInfo() {
+    updateValueFieldSiblingsInfo() {
         // Save to field figure 'siblings' refs to other figures
         this.field.figures.forEach(fieldItem => {
             let siblings = [...this.field.figures].filter(figure => {
@@ -237,7 +237,7 @@ class Game {
                 if (figure.id !== fieldItem.id) return figure;
             });
 
-            // link new updated sibling array to field figure 'siblings' prop
+            // link new updateValued sibling array to field figure 'siblings' prop
             fieldItem.siblings = siblings;
         });
     }
@@ -251,8 +251,8 @@ class Game {
         this.field.figures.push(figureObject);
 
         // TODO: check is do it really worth it?
-        // after field figures array was changing - update all field items siblings info
-        this.updateFieldSiblingsInfo();
+        // after field figures array was changing - updateValue all field items siblings info
+        this.updateValueFieldSiblingsInfo();
     }
 
 
@@ -265,8 +265,8 @@ class Game {
         let index = this.field.figures.indexOf(figureObject);
         this.field.figures.splice(index, 1);
 
-        // after field figures array was changing - update all field items siblings info
-        this.updateFieldSiblingsInfo(this.field.figures);
+        // after field figures array was changing - updateValue all field items siblings info
+        this.updateValueFieldSiblingsInfo(this.field.figures);
     }
 
 
@@ -339,7 +339,7 @@ class Game {
                     targetBlock.deleteFrom(this.field.figures);
                 });
 
-                // decrease highest value (update value after all deletions)
+                // decrease highest value (updateValue value after all deletions)
                 this.field.highestLine = this.field.highestLine > 0 ? this.field.highestLine - 1 : 0;
 
                 // forcefully move downward all remaining frozen blocks after removal
@@ -354,8 +354,8 @@ class Game {
                 });
 
                 // 10 point per deleted block
-                this.hud.scores.add(this.field.size[0] * 10);
-                this.hud.lines.update();
+                this.hud.scores.updateValue(this.field.size[0] * 10);
+                this.hud.lines.updateValue();
 
                 // additional checking after line is deleted
                 this.checkLineCompletitions();
@@ -514,7 +514,7 @@ class Game {
 
         // updating stopwatch values
         if (this.states.isGamePaused == false && this.states.isGameOver == false) {
-            this.hud.stopwatch.update();
+            this.hud.stopwatch.updateValue();
         }
 
         // todo fix this
@@ -553,7 +553,7 @@ class Game {
                         figure.freeze();
                         this.setHighestLine(figure);
                         this.checkLineCompletitions();
-                        this.hud.figures.update();
+                        this.hud.figures.updateValue();
 
                         this.player = this.spawnFigure();
                     }
@@ -563,7 +563,7 @@ class Game {
 
                         this.setHighestLine(figure);
                         this.checkLineCompletitions();
-                        this.hud.figures.update();
+                        this.hud.figures.updateValue();
 
                         this.player = this.spawnFigure();
                     }
@@ -592,7 +592,7 @@ class Game {
 
         if (startPointIsFull === false) {
             let figure = this.createFigure({
-                // update Game stored figure ID
+                // updateValue Game stored figure ID
                 id: this.#generateID(),
                 color: this.settings.themes.night.figures[shape],
                 parent: this.field,
@@ -612,7 +612,7 @@ class Game {
             let newFigureProjection = this.createProjectionFor(figure);
             this.playerProjection = newFigureProjection;
 
-            // update projection position 
+            // updateValue projection position 
             this.playerProjection.syncPosition();
 
             return figure;
@@ -683,7 +683,7 @@ class Game {
         this.generateQueue(3);
 
         // init game hud
-        this.hud.init(this.fpsInterval);
+        this.hud.init();
 
         // create and add player figure
         let player = this.spawnFigure();
@@ -692,7 +692,7 @@ class Game {
         // render all game figures include movements
         setInterval(this.render.bind(this), this.fpsInterval);
 
-        // update gravity impact at target figure
+        // updateValue gravity impact at target figure
         setInterval(this.gravitize.bind(this), 90 / this.settings.gravity);
 
         // manual fugire spawn
@@ -715,7 +715,6 @@ class Game {
         if (this.devTool.getValue('devMode') === true) {
             let devPanel = this.devTool.html.rootNodeRef;
             let manualSpawnButtons = devPanel.querySelectorAll('[data-button-value]');
-            console.log(devPanel);
 
             manualSpawnButtons.forEach(spawnButton => {
                 spawnButton.style.background = this.settings.themes.night.figures[spawnButton.getAttribute('data-button-value')]
@@ -774,7 +773,7 @@ class Game {
                     onMove: (figure) => {
                         this.fxStates.isCanPlayDeniedMoveFX = true;
 
-                        // update projection position 
+                        // updateValue projection position 
                         this.playerProjection.syncPosition();
                         this.sounds.play('sfx', 'movement', -0.7);
                     },
@@ -814,7 +813,7 @@ class Game {
                     onMove: (figure) => {
                         this.fxStates.isCanPlayDeniedMoveFX = true;
 
-                        // update projection position 
+                        // updateValue projection position 
                         this.playerProjection.syncPosition();
                         this.sounds.play('sfx', 'movement', -0.7);
                     },
@@ -835,7 +834,7 @@ class Game {
                             figure.freeze();
                             this.setHighestLine(figure);
                             this.checkLineCompletitions();
-                            this.hud.figures.update();
+                            this.hud.figures.updateValue();
 
                             this.player = this.spawnFigure();
                         }
@@ -844,7 +843,7 @@ class Game {
                             figure.freeze();
                             this.setHighestLine(figure);
                             this.checkLineCompletitions();
-                            this.hud.figures.update();
+                            this.hud.figures.updateValue();
 
                             this.player = this.spawnFigure();
                         }
@@ -864,7 +863,7 @@ class Game {
                             figure.freeze();
                             this.setHighestLine(figure);
                             this.checkLineCompletitions();
-                            this.hud.figures.update();
+                            this.hud.figures.updateValue();
 
                             this.screen.tremble('down');
                             this.sounds.play('sfx', 'drop');
