@@ -16,8 +16,8 @@
 }
 
 #app__screen {
-    width: 621px;
-    background: black;
+    width: 410px;
+    background: #000000e0;
     height: fit-content;
     padding: 15px;
     margin: 0;
@@ -114,29 +114,16 @@
 
 .hud-element {
     color: white;
-    position: absolute;
     width: 120px;
     font-family: monospace;
 }
 
-#hud__scores-display {
-    top: 32px;
-    right: 18px;
+#hud-container {
+    position: absolute;
+    top: 210px;
+    right: 17px;
 }
 
-
-#hud__figures-placed {
-    top: 46px;
-    right: 18px;
-}
-
-
-#hud__lines-completed {
-    top: 59px;
-    right: 18px;
-}
-
-#hud__stopwatch {
-    top: 72px;
-    right: 18px;
+#hud-container div {
+    position: relative;
 }
