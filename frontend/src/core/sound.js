@@ -15,11 +15,12 @@ class SoundComposer {
             drop: null,
             movement: null,
             denied: null,
+            rotation: null,
         }
 
         // music data
         this.music = {
-
+            gameOverChine: null,
          }
     }
 
@@ -80,6 +81,24 @@ class SoundComposer {
             type: 'sfx',
             name: 'denied',
             path: "/resources/sounds/sfx__denied.mp3",
+        });
+
+        this.loadFile({
+            type: 'sfx',
+            name: 'rotation',
+            path: "/resources/sounds/sfx__rotation.mp3",
+        });
+
+        this.loadFile({
+            type: 'sfx',
+            name: 'score',
+            path: "/resources/sounds/sfx__score.mp3",
+        });
+
+        this.loadFile({
+            type: 'music',
+            name: 'gameOverChime',
+            path: "/resources/sounds/music__game-over-chime.mp3",
         });
 
         let loadingQueueLength = Object.values(this.sfx).length;

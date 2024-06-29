@@ -356,6 +356,7 @@ class Game {
                 // 10 point per deleted block
                 this.hud.scores.updateValue(this.field.size[0] * 10);
                 this.hud.lines.updateValue();
+                this.sounds.play('sfx', 'score', 0.75);
 
                 // additional checking after line is deleted
                 this.checkLineCompletitions();
@@ -620,6 +621,7 @@ class Game {
             // TODO: add some visual
             let endMessage = 'Game over! Your score: ' + this.hud.scores.value;
             this.states.isGameOver = true;
+            this.sounds.play('music', 'gameOverChime', -0.7);
 
             console.log(endMessage, this.states);
             return false;
@@ -739,6 +741,8 @@ class Game {
 
                 // Rotating figure by pressing w/UpArrow
                 this.playerProjection.syncPosition();
+
+                this.sounds.play('sfx', 'rotation', 1.2);
             }
         });
 
