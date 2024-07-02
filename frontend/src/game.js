@@ -4,6 +4,7 @@ import { getRandomNumber } from './misc/helpers.js';
 
 import { Renderer } from './core/render.js';
 import { GameScreen } from './core/screen.js';
+import { GameEventTarget } from './core/event.js';
 import { Figure, FigureProjection } from './core/figure.js';
 import { Controls } from './core/controls.js';
 import { SoundComposer } from './core/sound.js';
@@ -11,10 +12,12 @@ import { HUD } from './core/hud.js';
 
 
 
-class Game {
+class Game extends GameEventTarget {
     #currentID = 0;
 
     constructor({ screenElement, fieldSize = [10, 16], gridCellSize = 20, settings, devTool }) {
+        super();
+
         if (screenElement) {
             // preparing some data
             const fps = 25;
@@ -46,6 +49,8 @@ class Game {
             const renderer = new Renderer({
                 context: screen.canvas.getContext("2d"),
             });
+
+            // const events = new SynteticEventSystem();
 
             // preparing Controls calss instance
             const controls = new Controls({ target: screen });
@@ -95,6 +100,7 @@ class Game {
             this.renderer = renderer;
             this.screen = screen;
             this.hud = hud;
+            // this.events = events;
             this.controls = controls;
             this.sounds = soundComposer;
         } else {
@@ -547,28 +553,7 @@ class Game {
             let direction = 'down';
 
             this.player.move({
-                direction: direction,
-                onCollide: (figure, collideWith) => {
-                    if (collideWith == 'fieldBorder') {
-                        // make it static
-                        figure.freeze();
-                        this.setHighestLine(figure);
-                        this.checkLineCompletitions();
-                        this.hud.figures.updateValue();
-
-                        this.player = this.spawnFigure();
-                    }
-
-                    if (collideWith == 'figure') {
-                        figure.freeze();
-
-                        this.setHighestLine(figure);
-                        this.checkLineCompletitions();
-                        this.hud.figures.updateValue();
-
-                        this.player = this.spawnFigure();
-                    }
-                },
+                direction: direction
             });
         }
     }
@@ -618,14 +603,19 @@ class Game {
 
             return figure;
         } else {
-            // TODO: add some visual
-            let endMessage = 'Game over! Your score: ' + this.hud.scores.value;
-            this.states.isGameOver = true;
-            this.sounds.play('music', 'gameOverChime', -0.7);
+            this.dispatchEvent('onGameover', {
+                scores: this.hud.scores.value,
+            });
 
-            console.log(endMessage, this.states);
             return false;
         }
+    }
+
+    updatePlayerFigure(){
+        let newFigure = this.spawnFigure();
+        newFigure.events = this.player.events;
+
+        this.player = newFigure;
     }
 
 
@@ -753,32 +743,7 @@ class Game {
                 // Moving figure to left by pressing a/LeftArrow
                 this.player.move({
                     direction: direction,
-                    onCollide: (figure, collideWith) => {
-                        this.playerProjection.syncPosition();
-
-                        if (this.fxStates.isCanPlayDeniedMoveFX === true) {
-                            this.screen.tremble('right');
-                            this.sounds.play('sfx', 'denied', -0.7);
-                            this.fxStates.isCanPlayDeniedMoveFX = false;
-                        }
-
-                        if (collideWith == 'fieldBorder') {
-                            console.log('Figure collide with ' + direction + ' border of game field');
-                        }
-
-                        if (collideWith == 'figure') {
-                            figure.freeze();
-                            this.setHighestLine(figure);
-                            this.checkLineCompletitions();
-                            this.player = this.spawnFigure();
-                        }
-                    },
-
                     onMove: (figure) => {
-                        this.fxStates.isCanPlayDeniedMoveFX = true;
-
-                        // updateValue projection position 
-                        this.playerProjection.syncPosition();
                         this.sounds.play('sfx', 'movement', -0.7);
                     },
                 });
@@ -791,34 +756,8 @@ class Game {
             if (this.checkMobility()) {
                 // Moving figure to left by pressing d/RightArrow
                 this.player.move({
-                    direction: direction,
-                    onCollide: (figure, collideWith) => {
-                        this.playerProjection.syncPosition();
-
-                        if (this.fxStates.isCanPlayDeniedMoveFX === true) {
-                            this.screen.tremble('left');
-                            this.sounds.play('sfx', 'denied', -0.7);
-                            this.fxStates.isCanPlayDeniedMoveFX = false;
-                        }
-
-                        if (collideWith == 'fieldBorder') {
-                            console.log('Figure collide with ' + direction + ' border of game field');
-                        }
-
-                        if (collideWith == 'figure') {
-                            figure.freeze();
-                            this.setHighestLine(figure);
-                            this.checkLineCompletitions();
-
-                            this.player = this.spawnFigure();
-                        }
-                    },
-
+                    direction: direction,     
                     onMove: (figure) => {
-                        this.fxStates.isCanPlayDeniedMoveFX = true;
-
-                        // updateValue projection position 
-                        this.playerProjection.syncPosition();
                         this.sounds.play('sfx', 'movement', -0.7);
                     },
                 });
@@ -832,25 +771,8 @@ class Game {
                 // Moving figure to down by pressing s/DownArrow
                 this.player.move({
                     direction: direction,
-                    onCollide: (figure, collideWith) => {
-                        if (collideWith == 'fieldBorder') {
-                            // make it static
-                            figure.freeze();
-                            this.setHighestLine(figure);
-                            this.checkLineCompletitions();
-                            this.hud.figures.updateValue();
-
-                            this.player = this.spawnFigure();
-                        }
-
-                        if (collideWith == 'figure') {
-                            figure.freeze();
-                            this.setHighestLine(figure);
-                            this.checkLineCompletitions();
-                            this.hud.figures.updateValue();
-
-                            this.player = this.spawnFigure();
-                        }
+                    onMove: (figure) => {
+                        this.sounds.play('sfx', 'movement', -0.7);
                     },
                 });
             }
@@ -860,23 +782,57 @@ class Game {
             if (this.checkMobility()) {
                 // at space key fast move figure to down
                 if (this.player.isFreezed == false) {
-                    this.player.moveDownUntilCollide({
-                        // when it colliding with something
-                        onCollide: figure => {
-                            // start starndart procedure
-                            figure.freeze();
-                            this.setHighestLine(figure);
-                            this.checkLineCompletitions();
-                            this.hud.figures.updateValue();
-
-                            this.screen.tremble('down');
-                            this.sounds.play('sfx', 'drop');
-
-                            this.player = this.spawnFigure();
-                        },
-                    });
+                    this.player.moveDownUntilCollide();
                 }
             }
+        });
+
+        this.player.addEventListener('onMove', (event) => {
+            if(event.direction !== 'down') this.fxStates.isCanPlayDeniedMoveFX = true;
+
+            console.log(this.playerProjection)
+
+            // updateValue projection position 
+            this.playerProjection.syncPosition();
+        });
+
+        this.player.addEventListener('onCollide', (event) => {
+            if(event.collideWith == 'figure' || event.direction == 'down'){
+                event.figure.freeze();
+                this.setHighestLine(event.figure);
+                this.checkLineCompletitions();
+                this.hud.figures.updateValue();
+                this.updatePlayerFigure();
+            }
+
+            if(this.fxStates.isCanPlayDeniedMoveFX === true && event.direction !== 'down') {
+                this.screen.tremble(event.direction);
+                this.sounds.play('sfx', 'denied', -0.7);
+                this.fxStates.isCanPlayDeniedMoveFX = false;
+            } 
+
+            if(event.direction == 'down') {
+                // chose sound effect to down movements (not for fast fall)
+                // this.sounds.play('sfx', 'drop');
+            }
+
+            // updateValue projection position 
+            this.playerProjection.syncPosition();
+        });
+
+        this.player.addEventListener('onFastfall', (event) => {
+            this.sounds.play('sfx', 'drop');
+            this.screen.tremble('down');
+        });
+
+        this.addEventListener('onGameover', (event) => {
+            // TODO: add some visual
+            let endMessage = 'Game over! Your score: ' + event.scores;
+            
+            this.states.isGameOver = true;
+            this.sounds.play('music', 'gameOverChime', -0.7);
+
+            console.log(endMessage, this.states);
         });
     }
 }

@@ -1,6 +1,7 @@
 console.log('[Log]: Starting figure.js');
 
 import { copyInstanceObject, rotatePoint } from "../misc/helpers.js";
+import { GameEventTarget } from "./event.js";
 import { Block } from "./block.js";
 
 /**
@@ -13,7 +14,7 @@ import { Block } from "./block.js";
  * @param {CanvasRenderingContext2D} renderer 
  * @returns {object}
  */
-class Figure {
+class Figure extends GameEventTarget {
     constructor({
         id,
         parent,
@@ -27,6 +28,7 @@ class Figure {
         textureName = `block__${shape}-gem.png`,
         renderer
     }) {
+        super();
 
         // some preparements
         // if cx and cy is empty - spawn at figure default spawn point (get using special function)
@@ -368,9 +370,14 @@ class Figure {
             // Handle collisions (with fieldBorder or figure)
             if (collisionDetected) {
                 delta = 0;
-                onCollideCB(this, collideWith);
 
-                //
+                onCollideCB(this, collideWith);
+                
+                if(Object.keys(this.events).length > 0) {
+                    // console.log('collide', this);
+                    this.dispatchEvent('onCollide', {figure: this, collideWith, collisionType, direction});
+                }
+
                 return false;
             }
 
@@ -395,6 +402,11 @@ class Figure {
             }
 
             onMoveCB();
+            
+            if(Object.keys(this.events).length > 0) {
+                // console.log('collide', this);
+                this.dispatchEvent('onMove', {figure: this, direction});
+            }
         }
     }
 
@@ -421,6 +433,11 @@ class Figure {
                     collideDetected = true;
 
                     onCollideCB(figure);
+
+                    if(Object.keys(this.events).length > 0) {
+                        // console.log('collide', this);
+                        this.dispatchEvent('onFastfall', {figure: this});
+                    }
                 }
             });
         }
