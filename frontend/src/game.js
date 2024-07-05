@@ -290,11 +290,35 @@ class Game extends GameEventTarget {
     }
 
 
-
     createProjectionFor(figure) {
         const projection = new FigureProjection(figure);
 
         return projection;
+    }
+
+    /**
+     * Removes all figure part's ("blocks") from completed line...
+     * ...and moves all other blocks to down
+     * @param {Array} targetLine - line to deletion
+     */
+    clearFieldLine(targetLine){
+        //delete all targets from checker
+        targetLine.blocks.forEach(targetBlock => {
+            targetBlock.deleteFrom(this.field.figures);
+        });
+
+        //decrease highest value (updateValue value after all deletions)
+        this.field.highestLine = this.field.highestLine > 0 ? this.field.highestLine - 1 : 0;
+
+        //forcefully move downward all remaining frozen blocks after removal
+        this.field.figures.forEach(figure => {
+            figure.move({
+                // froce flag for ignoring 'isFreezed' state!
+                force: true,
+
+                direction: 'down',
+            });
+        });
     }
 
     checkLineCompletitions() {
@@ -337,32 +361,12 @@ class Game extends GameEventTarget {
 
             // if checker says that line is complete
             if (line.isComplete === true) {
-                // log this
-                console.log('Line ' + lineNum + ' is complete now');
+                const data = {
+                    number: lineNum,
+                    blocks: line.targets,
+                };
 
-                // delete all targets from checker
-                line.targets.forEach(targetBlock => {
-                    targetBlock.deleteFrom(this.field.figures);
-                });
-
-                // decrease highest value (updateValue value after all deletions)
-                this.field.highestLine = this.field.highestLine > 0 ? this.field.highestLine - 1 : 0;
-
-                // forcefully move downward all remaining frozen blocks after removal
-                this.field.figures.forEach(figure => {
-
-                    figure.move({
-                        // froce flag for ignoring 'isFreezed' state!
-                        force: true,
-
-                        direction: 'down',
-                    });
-                });
-
-                // 10 point per deleted block
-                this.hud.scores.updateValue(this.field.size[0] * 10);
-                this.hud.lines.updateValue();
-                this.sounds.play('sfx', 'score', 0.75);
+                this.dispatchEvent('onLineFull', {line: data});
 
                 // additional checking after line is deleted
                 this.checkLineCompletitions();
@@ -787,12 +791,16 @@ class Game extends GameEventTarget {
             }
         });
 
+
+    
         this.player.addEventListener('onMove', (event) => {
             if(event.direction !== 'down') this.fxStates.isCanPlayDeniedMoveFX = true;
 
             // updateValue projection position 
             this.playerProjection.syncPosition();
         });
+
+
 
         this.player.addEventListener('onCollide', (event) => {
             if(event.collideWith == 'figure' || event.direction == 'down'){
@@ -818,10 +826,31 @@ class Game extends GameEventTarget {
             this.playerProjection.syncPosition();
         });
 
+
+
         this.player.addEventListener('onFastfall', (event) => {
             this.sounds.play('sfx', 'drop');
             this.screen.tremble('down');
         });
+
+
+
+        // TODO: choose 'Row' or 'Line' naming
+        this.addEventListener('onLineFull', (event) => {
+            // log this
+            console.log('Line ' + event.line.number + ' is complete now!');
+
+            // TODO: finded some bug on late game, when is several lines is completed at once...
+            // game spawns several figures at game spawn point and it causes to game over
+            this.clearFieldLine(event.line);
+
+            // 10 point per deleted block
+            this.hud.scores.updateValue(this.field.size[0] * 10);
+            this.hud.lines.updateValue();
+            this.sounds.play('sfx', 'score', 0.75);
+        });
+
+
 
         this.addEventListener('onGameover', (event) => {
             // TODO: add some visual
