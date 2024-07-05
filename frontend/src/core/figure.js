@@ -631,8 +631,14 @@ class FigureProjection {
         this.figure.projection.cx = this.projectionOf.cx;
 
         this.figure.projection.blocks.forEach((singleBlock, i) => {
-            singleBlock.x = this.projectionOf.blocks[i].x;
-            singleBlock.y = this.projectionOf.blocks[i].y;
+            // Bug after commit b8ef566:
+            // I don't wy but in some cases after line completition check...
+            // ...on event 'onMove' syncPosition method tries to move deleted and inexistent block.
+            // Fixed by adding this extra if statement
+            if(this.projectionOf.blocks[i]){
+                singleBlock.x = this.projectionOf.blocks[i].x;
+                singleBlock.y = this.projectionOf.blocks[i].y;
+            }
         });
 
         this.figure.projection.moveDownUntilCollide();

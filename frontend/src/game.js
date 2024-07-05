@@ -790,9 +790,6 @@ class Game extends GameEventTarget {
         this.player.addEventListener('onMove', (event) => {
             if(event.direction !== 'down') this.fxStates.isCanPlayDeniedMoveFX = true;
 
-            // TODO: fix projection syncing bug after line completition
-            console.log(this.playerProjection)
-
             // updateValue projection position 
             this.playerProjection.syncPosition();
         });
