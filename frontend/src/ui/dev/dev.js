@@ -108,7 +108,7 @@ class DevHelper {
         let optionButton = document.createElement('button');
         optionButton.id = 'dev-panel' + object.id + "-option-" + object.type;
         optionButton.classList = 'button';
-        optionButton.innerHTML = 'print';
+        optionButton.innerHTML = object.buttonText;
 
         // adding handler to update toggle button state and visula at click
         optionButton.addEventListener('click', (e) => {

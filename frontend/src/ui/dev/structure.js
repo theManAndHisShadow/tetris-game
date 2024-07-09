@@ -21,6 +21,16 @@ const data = {
                     id: 'printGameFieldFiguresToConsole',
                     type: 'button',
                     label: "print 'Game.field.figures' to console",
+                    buttonText: 'print',
+
+                    execute: null,
+                },
+
+                {
+                    id: 'clearField',
+                    type: 'button',
+                    label: "clear 'Game.field.figures' array",
+                    buttonText: 'clear',
 
                     execute: null,
                 },
