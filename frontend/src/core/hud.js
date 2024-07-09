@@ -35,6 +35,11 @@ class HUDElement {
         this.html.innerText = this.label + this.value;
     }
 
+    setValueManually (value = 0) {
+        this.value = value;
+        this.html.innerText = this.label + this.value;
+    }
+
 
 
     /**
