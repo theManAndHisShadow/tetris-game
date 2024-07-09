@@ -112,6 +112,8 @@ class DevHelper {
 
         // adding handler to update toggle button state and visula at click
         optionButton.addEventListener('click', (e) => {
+            // fixing space button bug
+            optionButton.blur();
             if(typeof object.execute == 'function') {
                 object.execute()
             } else {
