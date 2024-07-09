@@ -264,6 +264,39 @@ class Game extends GameEventTarget {
 
 
     /**
+     * Clears field, reset projection position and highest line value
+     */
+    #cleanField(){
+        // saving player figure
+        let playerFigure = this.player;
+        // resetting player siblings
+        playerFigure.siblings = [];
+
+        // reset figures array
+        this.field.figures = [];
+        // re-add player figure to figures array
+        this.field.figures.push(playerFigure);
+        
+        // resetting highest line
+        this.field.highestLine = 0;
+        this.renderHighestLine();
+
+        // recreateing projection object
+        let newProjection = this.createProjectionFor(playerFigure);
+        this.playerProjection = newProjection;
+
+        // updateValue projection position 
+        this.playerProjection.syncPosition();
+
+        // reset hud values to zero
+        this.hud.scores.setValueManually(0);
+        this.hud.figures.setValueManually(0);
+        this.hud.lines.setValueManually(0);
+    }
+
+
+
+    /**
      * Removes figure from field figures array
     * @param {Figure} figureObject figure to delete
     */
@@ -471,6 +504,18 @@ class Game extends GameEventTarget {
         });
     }
 
+    
+    renderHighestLine(){
+        // Calculating highest line hight pixels
+        let highestLineHeight = this.renderer.context.canvas.height - this.field.highestLine * this.field.gridCellSize;
+
+        // render current highest line
+        this.renderer.drawLine({
+            x1: 0, y1: this.renderer.context.canvas.height,
+            x2: 0, y2: highestLineHeight,
+            w: 3, c: 'red'
+        });
+    }
 
 
     /**
@@ -530,15 +575,7 @@ class Game extends GameEventTarget {
 
         // todo fix this
         if (true) {
-            // Calculating highest line hight pixels
-            let highestLineHeight = this.renderer.context.canvas.height - this.field.highestLine * this.field.gridCellSize;
-
-            // render current highest line
-            this.renderer.drawLine({
-                x1: 0, y1: this.renderer.context.canvas.height,
-                x2: 0, y2: highestLineHeight,
-                w: 3, c: 'red'
-            });
+            this.renderHighestLine();
         }
 
     }
@@ -704,6 +741,15 @@ class Game extends GameEventTarget {
             console.log(
                 "[Log]: executed DevTool 'printGameFieldFiguresToConsole' option handler",
                 this.field.figures
+            );
+        };
+        
+        // manual print info about field figures array to console
+        this.devTool.getOption('clearField').execute = (data) => {
+            this.#cleanField();
+            console.log(
+                "[Log]: executed DevTool 'clearField' option handler",
+                'Game.field.figures is cleaned now'
             );
         };
 
