@@ -8,6 +8,7 @@ import { Figure, FigureProjection } from './core/figure.js';
 import { Controls } from './core/controls.js';
 import { SoundComposer } from './core/sound.js';
 import { HUD } from './core/hud.js';
+import { MobileControllers } from './core/mobile-control.js';
 
 
 
@@ -47,8 +48,11 @@ class Game {
                 context: screen.canvas.getContext("2d"),
             });
 
-            // preparing Controls calss instance
+            // preparing Controls class instance
             const controls = new Controls({ target: screen });
+
+            // preparing mobile controls instance
+            const mobileControllers = new MobileControllers();
 
             // preparing SoundComposer class instance
             const soundComposer = new SoundComposer();
@@ -96,6 +100,7 @@ class Game {
             this.screen = screen;
             this.hud = hud;
             this.controls = controls;
+            this.mobileControllers = mobileControllers;
             this.sounds = soundComposer;
         } else {
             throw new Error('cant create without screenElement!');
@@ -674,6 +679,9 @@ class Game {
      */
     init() {
         console.log('[Log]: initializing Game');
+
+        // init mobile controls module
+        this.mobileControllers.init();
 
         // init controls module
         this.controls.init();

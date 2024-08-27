@@ -3,6 +3,10 @@
     padding: 0;
 }
 
+body, html {
+    height: 100%;
+}
+
 #root {
     background-size: cover;
     position: absolute;
@@ -16,7 +20,7 @@
 }
 
 #app__screen {
-    width: 410px;
+    width: 400px;
     background: #000000e0;
     height: fit-content;
     padding: 15px;
@@ -126,4 +130,42 @@
 
 #hud-container div {
     position: relative;
+}
+
+#root img {
+    z-index: 5;
+}
+
+#controllers__block {
+    display: grid;
+    justify-content: center;
+    position: absolute;
+    bottom: 50px;
+    grid-gap: 20px;
+    width: 100%;
+    grid-template-columns: repeat(3, 75px);
+}
+
+#controllers__block img {
+    width: 75px;
+}
+
+@media (max-width: 500px) {
+
+    #dev-panel {
+        display: none;
+    }
+
+    #app {
+        top: 37%;
+    }
+
+    #app__screen {
+        width: 350px;
+    }
+
+    #hud-container {
+        right: 20px;
+    }
+
 }

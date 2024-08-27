@@ -15,7 +15,7 @@ devTool.init();
 
 const tetris = new Game({
     screenElement: document.querySelector('#app__screen'),
-    gridCellSize: 23,
+    gridCellSize: 18,
     fieldSize: [12, 21], 
     settings: settings,
     devTool: devTool,

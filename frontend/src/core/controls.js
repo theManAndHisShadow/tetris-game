@@ -26,20 +26,21 @@ class Controls {
             // update event listener set state
             this.#hasKeyboardHandler = true;
 
-            document.body.addEventListener('keypress', (e) => {
-                /**
-                 * Internal helper function.
-                 * @param {string} targetAction 
-                 * @param {array} item pair [action, cb], single item of control handlerQueue
-                 */
-                function __execute(targetAction, item,){
-                    let action = item[0];
-                    let cb = item[1];
+            /**
+            * Internal helper function.
+            * @param {string} targetAction 
+            * @param {array} item pair [action, cb], single item of control handlerQueue
+            */
+            function __execute(targetAction, item,){
+                let action = item[0];
+                let cb = item[1];
 
-                    if(action == targetAction) {
-                        cb();
-                    }
+                if(action == targetAction) {
+                    cb();
                 }
+            }
+
+            document.body.addEventListener('keypress', (e) => {
                 
                 // This block chesk paricular key press and call cb function from handlerQueue
                 if(e.code == "ArrowUp" || e.code == "KeyW") {
@@ -67,6 +68,38 @@ class Controls {
                 }
 
                 if(e.code == "Space") {
+                    this.handlerQueue.forEach(item => {
+                        __execute('space', item);
+                    });
+                }
+            });
+
+            document.body.addEventListener('click', (e) => {
+                if(e.target.id === 'controller__up'){
+                    this.handlerQueue.forEach(item => {
+                        __execute('up', item);
+                    });
+                }
+
+                if(e.target.id === 'controller__left'){
+                    this.handlerQueue.forEach(item => {
+                        __execute('left', item);
+                    });
+                }
+
+                if(e.target.id === 'controller__right'){
+                    this.handlerQueue.forEach(item => {
+                        __execute('right', item);
+                    });
+                }
+
+                if(e.target.id === 'controller__down'){
+                    this.handlerQueue.forEach(item => {
+                        __execute('down', item);
+                    });
+                }
+
+                if(e.target.id === 'controller__forcedown'){
                     this.handlerQueue.forEach(item => {
                         __execute('space', item);
                     });

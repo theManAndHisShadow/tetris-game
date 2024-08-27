@@ -7,9 +7,10 @@ class DevHelper {
     /**
      * UI helper for dev purposes
      */
-    constructor({parentElement}){
+    constructor({parentElement}, visibleDevTools = true){
         this.html = null;
         this.parentElement  = parentElement;
+        this.visibleDevTools = visibleDevTools;
     }
 
     getOption (targetID){
@@ -206,15 +207,18 @@ class DevHelper {
     init (){
         console.log('[Log]: initializing DevUI');
 
-        let container = document.createElement('div');
-        container.id = 'dev-panel';
-        this.html = container;
-
-        console.log(this.parentElement, container);
-
-        this.parentElement.appendChild(container);
-
-        this.render();
+        if(this.visibleDevTools) {
+            let container = document.createElement('div');
+            container.id = 'dev-panel';
+            this.html = container;
+    
+            console.log(this.parentElement, container);
+    
+            this.parentElement.appendChild(container);
+    
+            this.render();
+        }
+        
     }
 }
 
