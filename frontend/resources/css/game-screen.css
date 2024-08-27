@@ -140,7 +140,7 @@ body, html {
     display: grid;
     justify-content: center;
     position: absolute;
-    bottom: 50px;
+    bottom: 15px;
     grid-gap: 20px;
     width: 100%;
     grid-template-columns: repeat(3, 75px);
@@ -157,7 +157,7 @@ body, html {
     }
 
     #app {
-        top: 37%;
+        top: 40%;
     }
 
     #app__screen {
